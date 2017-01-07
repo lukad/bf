@@ -1,63 +1,51 @@
 defmodule Bf do
-  alias Bf.State
-
   def run(program) do
     {:ok, tokens, _} = String.to_charlist(program) |> :lexer.string
     {:ok, ast} = :parser.parse(tokens)
-    ast
-    |> State.new
-    |> do_run
+    run(ast, 0, List.duplicate(0, 30_000))
   end
 
-  defp do_run(state = %State{program: [{:inc, x}|rest], ptr: ptr, mem: mem}) do
-    %{state | program: rest, mem: List.update_at(mem, ptr, &(&1 + x))}
-    |> do_run
+  defp run([{:inc, x}|rest], ptr, mem) do
+    run(rest, ptr, List.update_at(mem, ptr, &(&1 + x)))
   end
 
-  defp do_run(state = %State{program: [{:dec, x}|rest], ptr: ptr, mem: mem}) do
-    %{state | program: rest, mem: List.update_at(mem, ptr, &(&1 - x))}
-    |> do_run
+  defp run([{:dec, x}|rest], ptr, mem) do
+    run(rest, ptr, List.update_at(mem, ptr, &(&1 - x)))
   end
 
-  defp do_run(state = %State{program: [{:right, x}|rest], ptr: ptr}) do
-    %{state | program: rest, ptr: ptr + x}
-    |> do_run
+  defp run([{:right, x}|rest], ptr, mem) do
+    run(rest, ptr + x, mem)
   end
 
-  defp do_run(state = %State{program: [{:left, x}|rest], ptr: ptr}) do
-    %{state | program: rest, ptr: ptr - x}
-    |> do_run
+  defp run([{:left, x}|rest], ptr, mem) do
+    run(rest, ptr - x, mem)
   end
 
-  defp do_run(state = %State{program: [{:write}|rest]}) do
-    state
-    |> putc
-    |> Map.put(:program, rest)
-    |> do_run
+  defp run([{:write}|rest], ptr, mem) do
+    putc(ptr, mem)
+    run(rest, ptr, mem)
   end
 
-  defp do_run(state = %State{program: [{:read}|rest], mem: mem, ptr: ptr}) do
-    %{state | program: rest, mem: List.replace_at(mem, ptr, readc)}
-    |> do_run
+  defp run([{:read}|rest], ptr, mem) do
+    run(rest, ptr, List.replace_at(mem, ptr, readc))
   end
 
-  defp do_run(state = %State{program: [{:loop, body}|rest], mem: mem, ptr: ptr}) do
+  defp run(program = [{:loop, body}|rest], ptr, mem) do
     case Enum.at(mem, ptr) do
       0 ->
-        do_run(%{state | program: rest})
+        run(rest, ptr, mem)
       _ ->
-        %{mem: mem, ptr: ptr} = do_run(%{state | program: body})
-        do_run(%{state | mem: mem, ptr: ptr})
+        {p, m} = run(body, ptr, mem)
+        run(program, p, m)
     end
   end
 
-  defp do_run(state = %State{program: []}), do: state
+  defp run([], ptr, mem), do: {ptr, mem}
 
-  defp putc(state = %State{mem: mem, ptr: ptr}) do
+  defp putc(ptr, mem) do
     [Enum.at(mem, ptr)]
     |> to_string
     |> IO.write
-    state
   end
 
   defp readc do
