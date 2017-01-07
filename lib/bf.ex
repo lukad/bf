@@ -5,20 +5,12 @@ defmodule Bf do
     run(ast, 0, List.duplicate(0, 30_000))
   end
 
-  defp run([{:inc, x}|rest], ptr, mem) do
+  defp run([{:change, x}|rest], ptr, mem) do
     run(rest, ptr, List.update_at(mem, ptr, &(&1 + x)))
   end
 
-  defp run([{:dec, x}|rest], ptr, mem) do
-    run(rest, ptr, List.update_at(mem, ptr, &(&1 - x)))
-  end
-
-  defp run([{:right, x}|rest], ptr, mem) do
+  defp run([{:move, x}|rest], ptr, mem) do
     run(rest, ptr + x, mem)
-  end
-
-  defp run([{:left, x}|rest], ptr, mem) do
-    run(rest, ptr - x, mem)
   end
 
   defp run([{:write}|rest], ptr, mem) do
