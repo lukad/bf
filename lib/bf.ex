@@ -41,33 +41,17 @@ defmodule Bf do
     |> do_run
   end
 
-  defp do_run(state = %State{program: [{:loop, body}|rest], mem: mem, ptr: ptr, loop: loops, rest: rests}) do
-    if Enum.at(mem, ptr) == 0 do
-      do_run(%{state | program: rest})
-    else
-      do_run(%{state | program: body, loop: [body] ++ loops, rest: [rest] ++ rests})
+  defp do_run(state = %State{program: [{:loop, body}|rest], mem: mem, ptr: ptr}) do
+    case Enum.at(mem, ptr) do
+      0 ->
+        do_run(%{state | program: rest})
+      _ ->
+        %{mem: mem, ptr: ptr} = do_run(%{state | program: body})
+        do_run(%{state | mem: mem, ptr: ptr})
     end
   end
 
-  defp do_run(state = %State{program: [], loop: [loop|loops], rest: [rest|rests], mem: mem, ptr: ptr}) do
-    if Enum.at(mem, ptr) == 0 do
-      %{state | program: rest, loop: loops, rest: rests}
-    else
-      %{state | program: loop}
-    end
-    |> do_run
-  end
-
-  defp do_run(state = %State{program: [], loop: [loop|loops], rest: [], mem: mem, ptr: ptr}) do
-    if Enum.at(mem, ptr) == 0 do
-      state
-    else
-      %{state | program: loop, loop: loops}
-      |> do_run
-    end
-  end
-
-  defp do_run(state = %State{program: [], loop: [], rest: []}), do: state
+  defp do_run(state = %State{program: []}), do: state
 
   defp putc(state = %State{mem: mem, ptr: ptr}) do
     [Enum.at(mem, ptr)]

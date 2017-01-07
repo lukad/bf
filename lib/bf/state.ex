@@ -1,6 +1,6 @@
 defmodule Bf.State do
   @enforce_keys [:program, :mem]
-  defstruct     [:program, :mem, ptr: 0, loop: [], rest: []]
+  defstruct     [:program, :mem, ptr: 0]
 
   @mem_size 30_000
 
