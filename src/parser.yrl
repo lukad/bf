@@ -15,8 +15,8 @@ write
 exprs -> expr : ['$1'].
 exprs -> expr exprs : ['$1'] ++ '$2'.
 
-expr -> change : {change, value_of('$1')}.
-expr -> move   : {move, value_of('$1')}.
+expr -> change : '$1'.
+expr -> move   : '$1'.
 expr -> read   : {read}.
 expr -> write  : {write}.
 expr -> loop   : '$1'.
@@ -25,7 +25,3 @@ loop -> '[' ']' : {loop, []}.
 loop -> '[' exprs ']' : {loop, '$2'}.
 
 Rootsymbol exprs.
-
-Erlang code.
-
-value_of({_, V}) -> V.

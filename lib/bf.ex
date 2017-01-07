@@ -1,6 +1,8 @@
 defmodule Bf do
-  def run(program) do
-    {:ok, tokens, _} = String.to_charlist(program) |> :lexer.string
+  def run(program) when is_binary(program), do: program |> to_char_list |> run
+
+  def run(program) when is_list(program) do
+    {:ok, tokens, _} = :lexer.string(program)
     {:ok, ast} = :parser.parse(tokens)
     run(ast, 0, List.duplicate(0, 30_000))
   end
@@ -19,7 +21,7 @@ defmodule Bf do
   end
 
   defp run([{:read}|rest], ptr, mem) do
-    run(rest, ptr, List.replace_at(mem, ptr, readc))
+    run(rest, ptr, List.replace_at(mem, ptr, readc()))
   end
 
   defp run(program = [{:loop, body}|rest], ptr, mem) do
@@ -36,13 +38,13 @@ defmodule Bf do
 
   defp putc(ptr, mem) do
     [Enum.at(mem, ptr)]
-    |> to_string
     |> IO.write
   end
 
   defp readc do
     case IO.getn("", 1) do
       :eof -> 0
+      {:error, _reason} -> 0
       char -> char |> to_charlist |> List.first
     end
   end
