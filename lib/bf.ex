@@ -77,9 +77,9 @@ defmodule Bf do
   end
 
   defp readc do
-    case IO.read(1) |> to_charlist |> List.first do
+    case IO.getn("", 1) do
       :eof -> 0
-      char -> char
+      char -> char |> to_charlist |> List.first
     end
   end
 end
