@@ -1,4 +1,13 @@
 defmodule Bf do
+  @moduledoc """
+  Interprets brainfuck programs.
+
+  ## Examples
+
+      iex> Bf.run("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
+      Hello
+  """
+
   def run(program) when is_binary(program), do: program |> to_char_list |> run
 
   def run(program) when is_list(program) do

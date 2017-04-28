@@ -1,5 +1,14 @@
 defmodule Bf.CLI do
+  @moduledoc false
+
   def main(args) do
+    optimus_parser()
+    |> Optimus.parse!(args)
+    |> read_program
+    |> run_program
+  end
+
+  defp optimus_parser do
     Optimus.new!(
       name: "bf",
       description: "Brainfuck interpreter",
@@ -12,9 +21,6 @@ defmodule Bf.CLI do
         ]
       ]
     )
-    |> Optimus.parse!(args)
-    |> read_program
-    |> run_program
   end
 
   defp read_program(%{args: %{program_file: program_file}}) do
