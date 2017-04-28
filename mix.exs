@@ -16,7 +16,8 @@ defmodule Bf.Mixfile do
   defp deps do
     [
       {:optimus, "~> 0.1.0", runtime: false},
-      {:credo, "~> 0.7", runtime: false, only: [:dev, :test]}
+      {:credo, "~> 0.7", runtime: false, only: [:dev, :test]},
+      {:dogma, "~> 0.1.15", runtime: false, only: [:dev, :test]}
     ]
   end
 end

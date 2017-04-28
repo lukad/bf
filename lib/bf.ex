@@ -16,24 +16,24 @@ defmodule Bf do
     run(ast, 0, List.duplicate(0, 30_000))
   end
 
-  defp run([{:change, x}|rest], ptr, mem) do
+  defp run([{:change, x} | rest], ptr, mem) do
     run(rest, ptr, List.update_at(mem, ptr, &(&1 + x)))
   end
 
-  defp run([{:move, x}|rest], ptr, mem) do
+  defp run([{:move, x} | rest], ptr, mem) do
     run(rest, ptr + x, mem)
   end
 
-  defp run([{:write}|rest], ptr, mem) do
+  defp run([{:write} | rest], ptr, mem) do
     putc(ptr, mem)
     run(rest, ptr, mem)
   end
 
-  defp run([{:read}|rest], ptr, mem) do
+  defp run([{:read} | rest], ptr, mem) do
     run(rest, ptr, List.replace_at(mem, ptr, readc()))
   end
 
-  defp run(program = [{:loop, body}|rest], ptr, mem) do
+  defp run(program = [{:loop, body} | rest], ptr, mem) do
     case Enum.at(mem, ptr) do
       0 ->
         run(rest, ptr, mem)
