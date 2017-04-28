@@ -1,4 +1,4 @@
-# bf
+# bf [![Build Status](https://travis-ci.org/lukad/bf.svg?branch=master)](https://travis-ci.org/lukad/bf)
 
 `bf` is a simple [Brainfuck](https://esolangs.org/wiki/brainfuck) interpreter written in Elixir.
 It uses [`leex`](http://erlang.org/doc/man/leex.html) and [`yecc`](http://erlang.org/doc/man/yecc.html) for lexing and parsing.

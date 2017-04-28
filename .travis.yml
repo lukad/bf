@@ -1,0 +1,7 @@
+language: elixir
+elixir:
+  - 1.4.2
+
+script:
+  - mix dogma
+  - mix credo --strict
