@@ -1,20 +1,38 @@
 defmodule Bf.CLI do
-  def main([]) do
-    IO.puts("Please specify a brainfuck program to run")
+  def main(args) do
+    Optimus.new!(
+      name: "bf",
+      description: "Brainfuck interpreter",
+      version: version(),
+      args: [
+        program_file: [
+          value_name: "PROGRAM_FILE",
+          help: "Brainfuck program file to execute",
+          required: true,
+        ]
+      ]
+    )
+    |> Optimus.parse!(args)
+    |> read_program
+    |> run_program
   end
 
-  def main([filename|_]) do
-    filename
+  defp read_program(%{args: %{program_file: program_file}}) do
+    program_file
     |> File.read
-    |> run(filename)
   end
 
-  defp run({:ok, program}, _filename) do
+  defp run_program({:ok, program}) do
     Bf.run(program)
   end
 
-  defp run(_file, filename) do
-    IO.puts("Could not read program \"#{filename}\"")
+  defp run_program({:error, reason}) do
+    IO.puts("Could not read program: #{reason}")
     System.halt(1)
+  end
+
+  defp version do
+    {:ok, vsn} = :application.get_key(:bf, :vsn)
+    List.to_string(vsn)
   end
 end
