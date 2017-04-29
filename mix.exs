@@ -16,7 +16,7 @@ defmodule Bf.Mixfile do
       source_url: "https://github.com/lukad/bf",
       homepage_url: "https://github.com/lukad/bf",
       docs: [
-        main: "Bf",
+        main: "readme",
         extras: ["README.md"]
       ]
     ]
