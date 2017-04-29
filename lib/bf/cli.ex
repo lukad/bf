@@ -61,17 +61,8 @@ defmodule Bf.CLI do
   end
 
   defp print_ast(program_file) do
-    program_file
-    |> read_program
-    |> to_char_list
-    |> parse_program
-    |> IO.inspect(limit: :infinity)
-  end
-
-  defp parse_program(program) do
-    {:ok, tokens, _} = :lexer.string(program)
-    {:ok, ast} = :parser.parse(tokens)
-    ast
+    {:ok, program} = program_file |> read_program |> Bf.parse
+    IO.inspect(program, limit: :infinity)
   end
 
   defp version do

@@ -1,6 +1,6 @@
 defmodule Bf do
   @moduledoc """
-  Interprets brainfuck programs.
+  Parses and interprets brainfuck programs.
 
   ## Examples
 
@@ -8,11 +8,63 @@ defmodule Bf do
       Hello
   """
 
-  def run(program) when is_binary(program), do: program |> to_char_list |> run
+  @typedoc "All possible brainfuck instructions."
+  @type instruction
+  :: {:change, integer}
+  | {:move, integer}
+  | {:read}
+  | {:write}
+  | {:loop, program}
 
-  def run(program) when is_list(program) do
+  @typedoc "A list of brainfuck instructions."
+  @type program :: list(instruction)
+
+  @doc """
+  Parses a brainfuck program into and returns a list of instructions.
+
+  ## Examples
+      iex> Bf.run("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
+      [{:change, -2},
+       {:loop, [move: 1, change: -3, move: 1, change: -1, move: 1, change: -1,
+                move: 1, change: 2, move: 1, change: -1, move: -5, change: -7]},
+       {:move, 1},
+       {:change, -2}, {:write}, {:move, 1}, {:change, -9}, {:write}, {:move, 1},
+       {:change, -2}, {:write}, {:write}, {:change, 3}, {:write}]
+  """
+  @spec parse(String.t | List.Chars.t) :: {:ok, program}
+  def parse(program) when is_binary(program) do
+    program
+    |> to_charlist
+    |> parse
+  end
+
+  def parse(program) when is_list(program) do
     {:ok, tokens, _} = :lexer.string(program)
-    {:ok, ast} = :parser.parse(tokens)
+    :parser.parse(tokens)
+  end
+
+  @typedoc """
+  The state returned by the interpreter.
+
+  It is the current cell index and the memory.
+  """
+  @type state :: {integer, list(integer)}
+
+  @doc """
+  Parses and executes a brainfuck program. Returns the machine's state.
+
+  ## Examples
+
+      iex> Bf.run("++++++++++[->++++++++++<]>++.+++++++++.." <>
+                  "<+++++++++[->---------<]>-----------------.---.<")
+      foo
+      {0,
+       [0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]}
+  """
+  @spec run(String.t) :: state
+  def run(program) do
+    {:ok, ast} = program |> parse
     run(ast, 0, List.duplicate(0, 30_000))
   end
 
