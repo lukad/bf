@@ -69,7 +69,7 @@ defmodule Bf do
   end
 
   defp run([{:change, x} | rest], ptr, mem) do
-    run(rest, ptr, List.update_at(mem, ptr, &(&1 + x)))
+    run(rest, ptr, List.update_at(mem, ptr, &(wrap(&1 + x))))
   end
 
   defp run([{:move, x} | rest], ptr, mem) do
@@ -82,7 +82,7 @@ defmodule Bf do
   end
 
   defp run([{:read} | rest], ptr, mem) do
-    run(rest, ptr, List.replace_at(mem, ptr, readc()))
+    run(rest, ptr, List.replace_at(mem, ptr, wrap(readc())))
   end
 
   defp run(program = [{:loop, body} | rest], ptr, mem) do
@@ -107,6 +107,13 @@ defmodule Bf do
       :eof -> 0
       {:error, _reason} -> 0
       char -> char |> to_charlist |> List.first
+    end
+  end
+
+  defp wrap(a, b \\ 256) do
+    case rem(a, b) do
+      value when value < 0 -> value + b
+      value -> value
     end
   end
 end
