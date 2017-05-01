@@ -4,17 +4,17 @@ defmodule Bf do
 
   ## Examples
 
-      iex> Bf.run("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
+      Bf.run("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
       Hello
   """
 
   @typedoc "All possible brainfuck instructions."
-  @type instruction
-  :: {:change, integer}
-  | {:move, integer}
-  | {:read}
-  | {:write}
-  | {:loop, program}
+  @type instruction ::
+    {:change, integer} |
+    {:move, integer} |
+    {:read} |
+    {:write} |
+    {:loop, program}
 
   @typedoc "A list of brainfuck instructions."
   @type program :: list(instruction)
@@ -23,13 +23,16 @@ defmodule Bf do
   Parses a brainfuck program into and returns a list of instructions.
 
   ## Examples
-      iex> Bf.run("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
-      [{:change, -2},
-       {:loop, [move: 1, change: -3, move: 1, change: -1, move: 1, change: -1,
-                move: 1, change: 2, move: 1, change: -1, move: -5, change: -7]},
-       {:move, 1},
-       {:change, -2}, {:write}, {:move, 1}, {:change, -9}, {:write}, {:move, 1},
-       {:change, -2}, {:write}, {:write}, {:change, 3}, {:write}]
+
+      iex> Bf.parse("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
+      {:ok,
+       [{:change, -2},
+        {:loop,
+         [move: 1, change: -3, move: 1, change: -1, move: 1, change: -1,
+          move: 1, change: 2, move: 1, change: -1, move: -5, change: -7]},
+        {:move, 1}, {:change, -2}, {:write}, {:move, 1}, {:change, -9},
+        {:write}, {:move, 1}, {:change, -2}, {:write}, {:write},
+        {:change, 3}, {:write}]}
   """
   @spec parse(String.t | List.Chars.t) :: {:ok, program}
   def parse(program) when is_binary(program) do
@@ -55,12 +58,9 @@ defmodule Bf do
 
   ## Examples
 
-      iex> Bf.run("++++++++++[->++++++++++<]>++.+++++++++.." <>
-                  "<+++++++++[->---------<]>-----------------.---.<")
+      Bf.run("++++++++++[->++++++++++<]>++.+++++++++.." <>
+             "<+++++++++[->---------<]>-----------------.---.<")
       foo
-      {0,
-       [0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...]}
   """
   @spec run(String.t) :: state
   def run(program) do
