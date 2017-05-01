@@ -4,7 +4,7 @@ defmodule BfTest do
 
   import ExUnit.CaptureIO
 
-  describe ".parse" do
+  describe "Bf.parse/1" do
     test "skips non bf instructions" do
       assert Bf.parse("This is a valid Brainfuck program.") == {:ok, [{:write}]}
     end
@@ -62,7 +62,7 @@ defmodule BfTest do
     end
   end
 
-  describe ".run" do
+  describe "Bf.run/1" do
     test "prints all 256 characters" do
       expected = 0..255 |> Enum.to_list |> to_string()
       assert_output "-[>.+<-]>.", expected
