@@ -18,7 +18,6 @@ cd bf
 MIX_ENV=prod mix do escript.build, escript.install
 ```
 
-
 ## Usage
 
 ```bash
@@ -49,3 +48,13 @@ EOF
 $ bf hello.bf
 Hello World!
 ```
+
+## Interpreter Info
+
+* Cells are 8 bits wide
+* Cells wrap around 256
+  * `255 + 1 = 0`
+  * `0 - 1 = 255`
+* The tape is 30000 cells large
+* The tape pointer wraps around 30000
+* '0' on STDIN signals EOF
