@@ -3,6 +3,10 @@
 `bf` is a simple [Brainfuck](https://esolangs.org/wiki/brainfuck) interpreter written in Elixir.
 It uses [`leex`](http://erlang.org/doc/man/leex.html) and [`yecc`](http://erlang.org/doc/man/yecc.html) for lexing and parsing.
 
+## Documentation
+
+Documentation for the latest release is availabe at [hexdocs.pm](https://hexdocs.pm/bf).
+
 ## Installation
 
 Automatic installation with mix >= 1.4.0

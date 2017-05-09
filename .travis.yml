@@ -8,11 +8,9 @@ cache:
 
 env:
   global:
-    - ENCRYPTION_LABEL: "028a4858160e"
     - COMMIT_AUTHOR_EMAIL: "luka.dornhecker@gmail.com"
 
 script:
   - mix dogma
   - mix credo --strict
   - mix test
-  - bash deploy.sh
