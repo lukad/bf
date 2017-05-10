@@ -102,7 +102,8 @@ defmodule Bf do
   defp run([], ptr, mem), do: {ptr, mem}
 
   defp prompt do
-    IO.gets("bf> ")
+    "bf> "
+    |> IO.gets()
     |> String.trim
   end
 
@@ -117,7 +118,8 @@ defmodule Bf do
 
   defp debug("print mem[" <> <<digit::bytes-size(1)>> <> "]", rest, ptr, mem) do
     index = String.to_integer(digit)
-    Enum.at(mem, index)
+    mem
+    |> Enum.at(index)
     |> IO.inspect
     prompt() |> debug(rest, ptr, mem)
   end
