@@ -1,6 +1,6 @@
 Definitions.
 
-COMMENT = [^\+\-\,\.\>\<\[\]]
+COMMENT = [^\+\-\,\.\>\<\[\]#]
 
 Rules.
 
@@ -13,5 +13,12 @@ Rules.
 \.        : {token, {write, TokenChars}}.
 \[        : {token, {'[', TokenChars}}.
 \]        : {token, {']', TokenChars}}.
+\#        : debug(os:getenv("BF_DEBUG", "")).
 
 Erlang code.
+
+debug("TRUE") ->
+    {token, {break}};
+
+debug(_) ->
+    skip_token.
