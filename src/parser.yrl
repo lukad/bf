@@ -10,6 +10,7 @@ change
 move
 read
 write
+break
 '['
 ']'
 .
@@ -24,6 +25,7 @@ expr -> changes : {change, sum('$1')}.
 expr -> moves   : {move, sum('$1')}.
 expr -> read    : {read}.
 expr -> write   : {write}.
+expr -> break   : {break}.
 expr -> loop    : '$1'.
 
 changes -> change : ['$1'].

@@ -85,6 +85,10 @@ defmodule Bf do
     run(rest, ptr, List.replace_at(mem, ptr, wrap(readc())))
   end
 
+  defp run([{:break} | rest], ptr, mem) do
+    prompt() |> debug(rest, ptr, mem)
+  end
+
   defp run(program = [{:loop, body} | rest], ptr, mem) do
     case Enum.at(mem, ptr) do
       0 ->
@@ -96,6 +100,33 @@ defmodule Bf do
   end
 
   defp run([], ptr, mem), do: {ptr, mem}
+
+  defp prompt do
+    "bf> "
+    |> IO.gets()
+    |> String.trim
+  end
+
+  defp debug("h", rest, ptr, mem), do: debug("help", rest, ptr, mem)
+  defp debug("help", rest, ptr, mem) do
+    IO.puts "Help"
+    prompt() |> debug(rest, ptr, mem)
+  end
+
+  defp debug("c", rest, ptr, mem), do: debug("continue", rest, ptr, mem)
+  defp debug("continue", rest, ptr, mem), do: run(rest, ptr, mem)
+
+  defp debug("print mem[" <> <<digit::bytes-size(1)>> <> "]", rest, ptr, mem) do
+    index = String.to_integer(digit)
+    mem
+    |> Enum.at(index)
+    |> IO.inspect
+    prompt() |> debug(rest, ptr, mem)
+  end
+
+  defp debug(_, rest, ptr, mem) do
+    prompt() |> debug(rest, ptr, mem)
+  end
 
   defp putc(ptr, mem) do
     [Enum.at(mem, ptr)]

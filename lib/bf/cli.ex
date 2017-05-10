@@ -7,7 +7,8 @@ defmodule Bf.CLI do
     |> run
   end
 
-  defp run(%{args: %{program_file: program_file}}) do
+  defp run(%{args: %{program_file: program_file}, flags: %{debug: debug}}) do
+    System.put_env("BF_DEBUG", String.upcase(to_string(debug)))
     run_program(program_file)
   end
 
@@ -25,6 +26,13 @@ defmodule Bf.CLI do
           value_name: "PROGRAM_FILE",
           help: "The brainfuck program file to execute",
           required: true,
+        ]
+      ],
+      flags: [
+        debug: [
+          short: "-d",
+          help: "Enable debugger instruction (#)",
+          multiple: false
         ]
       ],
       subcommands: [
