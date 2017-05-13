@@ -26,6 +26,7 @@ defmodule Bf.Mixfile do
 
   defp deps do
     [
+      {:combine, "~> 0.9.6"},
       {:optimus, "~> 0.1.0", runtime: false},
       {:dogma, "~> 0.1.15", runtime: false, only: [:dev, :test]},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
