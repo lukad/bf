@@ -68,5 +68,29 @@ defmodule BfParserTest do
     test "fails when loop is not opened" do
       assert {:error, _} = parse("]")
     end
+
+    test "optimizes a loop that sets the current cell to 0" do
+      assert parse("[-]") == {:ok, [{:set, 0}]}
+    end
+
+    test "it combines set 0 and a following add" do
+      assert parse("[-]+++") == {:ok, [{:set, 3}]}
+    end
+
+    test "it skips add before set 0" do
+      assert parse("+++[-]") == {:ok, [{:set, 0}]}
+    end
+
+    test "it skips add before set" do
+      assert parse("-[-]+++") == {:ok, [{:set, 3}]}
+    end
+
+    test "it combines consecutive sets" do
+      assert parse("[-]+++++[-]--") == {:ok, [{:set, 3}]}
+    end
+
+    test "skips set 0 and a loop" do
+      assert parse("+++[-][.+]-") == {:ok, [{:add, 2}]}
+    end
   end
 end
