@@ -8,14 +8,15 @@ Documentation for the latest release is availabe at [hexdocs.pm](https://hexdocs
 
 ## Installation
 
-Automatic installation with mix >= 1.4.0
+Automatic installation with mix:
 
 ```bash
-mix escript.install github lukad/bf
+mix escript.install bf
 ```
+
 Manual installation
 
-```
+```bash
 git clone https://github.com/lukad/bf.git
 cd bf
 MIX_ENV=prod mix do escript.build, escript.install
