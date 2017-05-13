@@ -4,10 +4,10 @@ defmodule Bf.Parser do
 
   ## Examples
       iex> Bf.Parser.parse("+++[]+[-]>--")
-      {:ok, [{:change, 4},
-             {:loop, [{:change, -1}]},
+      {:ok, [{:add, 4},
+             {:loop, [{:add, -1}]},
              {:move, 1},
-             {:change, -2}]}
+             {:add, -2}]}
   """
 
   use Combine, parsers: [:text]
@@ -18,7 +18,7 @@ defmodule Bf.Parser do
 
   @typedoc "All possible brainfuck instructions."
   @type instruction ::
-    {:change, integer} |
+    {:add, integer} |
     {:move, integer} |
     {:read} |
     {:write} |
@@ -35,13 +35,13 @@ defmodule Bf.Parser do
       iex> "--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++."
       ...> |> Bf.Parser.parse()
       {:ok,
-       [{:change, -2},
+       [{:add, -2},
         {:loop,
-         [move: 1, change: -3, move: 1, change: -1, move: 1, change: -1,
-          move: 1, change: 2, move: 1, change: -1, move: -5, change: -7]},
-        {:move, 1}, {:change, -2}, {:write}, {:move, 1}, {:change, -9},
-        {:write}, {:move, 1}, {:change, -2}, {:write}, {:write},
-        {:change, 3}, {:write}]}
+         [move: 1, add: -3, move: 1, add: -1, move: 1, add: -1,
+          move: 1, add: 2, move: 1, add: -1, move: -5, add: -7]},
+        {:move, 1}, {:add, -2}, {:write}, {:move, 1}, {:add, -9},
+        {:write}, {:move, 1}, {:add, -2}, {:write}, {:write},
+        {:add, 3}, {:write}]}
   """
   @spec parse(String.t) :: {:ok, program} | {:error, term}
   def parse(source) do
@@ -57,12 +57,12 @@ defmodule Bf.Parser do
   defp optimize(_, b), do: optimize(b, opt(b))
 
   defp opt([]), do: []
-  defp opt([{:change, 0} | rest]), do: opt(rest)
+  defp opt([{:add, 0} | rest]), do: opt(rest)
   defp opt([{:move, 0} | rest]), do: opt(rest)
   defp opt([{:loop, []} | rest]), do: opt(rest)
   defp opt([{:loop, body} | rest]), do: [{:loop, opt(body)} | opt(rest)]
-  defp opt([{:change, a}, {:change, b} | rest]) do
-    opt([{:change, a + b} | rest])
+  defp opt([{:add, a}, {:add, b} | rest]) do
+    opt([{:add, a + b} | rest])
   end
   defp opt([{:move, a}, {:move, b} | rest]), do: opt([{:move, a + b} | rest])
   defp opt([ins | rest]), do: [ins | opt(rest)]
@@ -75,14 +75,14 @@ defmodule Bf.Parser do
 
   defp instruction do
     skip(comment())
-    |> choice([change(), move(), read(), write(), loop()])
+    |> choice([add(), move(), read(), write(), loop()])
     |> skip(comment())
   end
 
   defp comment, do: many(none_of(char(), @valid_tokens))
   defp read, do: char(",") |> map(fn _ -> {:read} end)
   defp write, do: char(".") |> map(fn _ -> {:write} end)
-  defp change, do: sum_instruction(:change, "+", "-")
+  defp add, do: sum_instruction(:add, "+", "-")
   defp move, do: sum_instruction(:move, ">", "<")
 
   @doc false

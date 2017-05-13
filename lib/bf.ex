@@ -31,7 +31,7 @@ defmodule Bf do
     run(program, 0, List.duplicate(0, 30_000))
   end
 
-  defp run([{:change, x} | rest], ptr, mem) do
+  defp run([{:add, x} | rest], ptr, mem) do
     run(rest, ptr, List.update_at(mem, ptr, &(wrap(&1 + x))))
   end
 

@@ -18,20 +18,20 @@ defmodule BfParserTest do
     end
 
     test "parses a very very simple program" do
-      assert parse(" ++++ ") == {:ok, [{:change, 4}]}
+      assert parse(" ++++ ") == {:ok, [{:add, 4}]}
     end
 
     test "parses a very simple program" do
-      assert parse(">+<-,.") == {:ok, [{:move, 1}, {:change, 1}, {:move, -1},
-                                          {:change, -1}, {:read}, {:write}]}
+      assert parse(">+<-,.") == {:ok, [{:move, 1}, {:add, 1}, {:move, -1},
+                                          {:add, -1}, {:read}, {:write}]}
     end
 
     test "groups consecutive occurences of + and -" do
-      assert parse("++---+-----") == {:ok, [{:change, -5}]}
+      assert parse("++---+-----") == {:ok, [{:add, -5}]}
     end
 
     test "groups consecutive occurences of + and - with non code inbetween" do
-      assert parse("-foo-++++\n+bar++- --") == {:ok, [{:change, 2}]}
+      assert parse("-foo-++++\n+bar++- --") == {:ok, [{:add, 2}]}
     end
 
     test "groups consecutive occurences of > and <" do
@@ -39,26 +39,25 @@ defmodule BfParserTest do
     end
 
     test "groups consecutive occurences of < and > with non code inbetween" do
-      assert parse("-foo-++++\n+bar++- --") == {:ok, [{:change, 2}]}
+      assert parse("-foo-++++\n+bar++- --") == {:ok, [{:add, 2}]}
     end
 
     test "parses simple loops" do
-      assert parse("-[+++]+") == {:ok, [{:change, -1},
-                                           {:loop, [{:change, 3}]},
-                                           {:change, 1}]}
+      assert parse("-[+++]+") == {:ok, [{:add, -1},
+                                           {:loop, [{:add, 3}]},
+                                           {:add, 1}]}
     end
 
     test "it skips empty loops" do
-      assert parse("++[[[[][]]][]]++") == {:ok, [{:change, 4}]}
+      assert parse("++[[[[][]]][]]++") == {:ok, [{:add, 4}]}
     end
 
-
     test "parses nested loops" do
-      expected = {:ok, [change: -1,
-                        loop: [change: 2,
-                               loop: [change: -2],
-                               loop: [change: 2]],
-                        change: 1]}
+      expected = {:ok, [add: -1,
+                        loop: [add: 2,
+                               loop: [add: -2],
+                               loop: [add: 2]],
+                        add: 1]}
       assert parse("-[++[--][++]]+") == expected
     end
 
