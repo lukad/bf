@@ -81,6 +81,11 @@ defmodule BfParserTest do
       assert parse("+++[-]") == {:ok, [{:set, 0}]}
     end
 
+    test "it skips add before set" do
+      assert parse("-[-]+++") == {:ok, [{:set, 3}]}
+    end
+
+
     test "it combines consecutive sets" do
       assert parse("[-]+++++[-]--") == {:ok, [{:set, 3}]}
     end
