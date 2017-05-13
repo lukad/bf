@@ -39,6 +39,10 @@ defmodule Bf do
     run(rest, ptr + x, mem)
   end
 
+  defp run([{:set, x} | rest], ptr, mem) do
+    run(rest, ptr, List.update_at(mem, ptr, fn _ -> x end))
+  end
+
   defp run([{:write} | rest], ptr, mem) do
     putc(ptr, mem)
     run(rest, ptr, mem)

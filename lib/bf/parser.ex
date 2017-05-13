@@ -54,20 +54,26 @@ defmodule Bf.Parser do
   end
 
   defp optimize(ast), do: optimize(ast, opt(ast))
-  defp optimize(a, b) when a == b, do: a
+  defp optimize(a, a), do: a
   defp optimize(_, b), do: optimize(b, opt(b))
 
   defp opt([]), do: []
+
   defp opt([{:add, 0} | rest]), do: opt(rest)
   defp opt([{:move, 0} | rest]), do: opt(rest)
+
   defp opt([{:loop, []} | rest]), do: opt(rest)
   defp opt([{:loop, [{:add, -1}]} | rest]), do: opt([{:set, 0} | rest])
   defp opt([{:loop, body} | rest]), do: [{:loop, opt(body)} | opt(rest)]
+
   defp opt([{:add, a}, {:add, b} | rest]), do: opt([{:add, a + b} | rest])
   defp opt([{:move, a}, {:move, b} | rest]), do: opt([{:move, a + b} | rest])
+
   defp opt([{:set, a}, {:set, b} | rest]), do: opt([{:set, a + b} | rest])
+  defp opt([{:set, 0}, {:loop, _} | rest]), do: opt(rest)
   defp opt([{:set, 0}, {:add, add} | rest]), do: opt([{:set, add} | rest])
   defp opt([{:add, _}, {:set, x} | rest]), do: opt([{:set, x} | rest])
+
   defp opt([ins | rest]), do: [ins | opt(rest)]
 
   defp program do
