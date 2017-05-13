@@ -1,50 +1,13 @@
 defmodule Bf do
   @moduledoc """
-  Parses and interprets brainfuck programs.
+  Interprets brainfuck programs.
 
   ## Examples
 
-      Bf.run("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
+      Bf.Parser.parse("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
+      |> Bf.run()
       Hello
   """
-
-  @typedoc "All possible brainfuck instructions."
-  @type instruction ::
-    {:change, integer} |
-    {:move, integer} |
-    {:read} |
-    {:write} |
-    {:loop, program}
-
-  @typedoc "A list of brainfuck instructions."
-  @type program :: list(instruction)
-
-  @doc """
-  Parses a brainfuck program into and returns a list of instructions.
-
-  ## Examples
-
-      iex> Bf.parse("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
-      {:ok,
-       [{:change, -2},
-        {:loop,
-         [move: 1, change: -3, move: 1, change: -1, move: 1, change: -1,
-          move: 1, change: 2, move: 1, change: -1, move: -5, change: -7]},
-        {:move, 1}, {:change, -2}, {:write}, {:move, 1}, {:change, -9},
-        {:write}, {:move, 1}, {:change, -2}, {:write}, {:write},
-        {:change, 3}, {:write}]}
-  """
-  @spec parse(String.t | List.Chars.t) :: {:ok, program}
-  def parse(program) when is_binary(program) do
-    program
-    |> to_charlist
-    |> parse
-  end
-
-  def parse(program) when is_list(program) do
-    {:ok, tokens, _} = :lexer.string(program)
-    :parser.parse(tokens)
-  end
 
   @typedoc """
   The state returned by the interpreter.
@@ -58,14 +21,14 @@ defmodule Bf do
 
   ## Examples
 
-      Bf.run("++++++++++[->++++++++++<]>++.+++++++++.." <>
-             "<+++++++++[->---------<]>-----------------.---.<")
+      Bf.Parser.parse("++++++++++[->++++++++++<]>++.+++++++++.." <>
+                      "<+++++++++[->---------<]>-----------------.---.<")
+      |> Bf.run
       foo
   """
-  @spec run(String.t) :: state
-  def run(program) do
-    {:ok, ast} = program |> parse
-    run(ast, 0, List.duplicate(0, 30_000))
+  @spec run(Bf.Parser.program) :: state
+  def run({:ok, program}) do
+    run(program, 0, List.duplicate(0, 30_000))
   end
 
   defp run([{:change, x} | rest], ptr, mem) do

@@ -57,11 +57,12 @@ defmodule Bf.CLI do
   defp run_program(program_file) do
     program_file
     |> read_program
+    |> Bf.Parser.parse
     |> Bf.run
   end
 
   defp print_ast(program_file) do
-    {:ok, program} = program_file |> read_program |> Bf.parse
+    {:ok, program} = program_file |> read_program |> Bf.Parser.parse
     IO.inspect(program, limit: :infinity)
   end
 
