@@ -16,6 +16,9 @@ defmodule Bf do
   """
   @type state :: {integer, list(integer)}
 
+  @cell_size 256
+  @mem_size 30_000
+
   @doc """
   Parses and executes a brainfuck program. Returns the machine's state.
 
@@ -28,19 +31,23 @@ defmodule Bf do
   """
   @spec run({:ok, Bf.Parser.program}) :: state
   def run({:ok, program}) do
-    run(program, 0, List.duplicate(0, 30_000))
+    run(program, 0, List.duplicate(0, @mem_size))
   end
 
   defp run([{:add, x} | rest], ptr, mem) do
-    run(rest, ptr, List.update_at(mem, ptr, &(wrap(&1 + x))))
+    run(rest, ptr, List.update_at(mem, ptr, &(wrap(&1 + x, @cell_size))))
   end
 
   defp run([{:move, x} | rest], ptr, mem) do
-    run(rest, ptr + x, mem)
+    run(rest, wrap(ptr + x, @mem_size), mem)
   end
 
   defp run([{:set, x} | rest], ptr, mem) do
     run(rest, ptr, List.update_at(mem, ptr, fn _ -> x end))
+  end
+
+  defp run([{:scan, step} | rest], ptr, mem) do
+    run(rest, scan(ptr, mem, step), mem)
   end
 
   defp run([{:write} | rest], ptr, mem) do
@@ -49,7 +56,7 @@ defmodule Bf do
   end
 
   defp run([{:read} | rest], ptr, mem) do
-    run(rest, ptr, List.replace_at(mem, ptr, wrap(readc())))
+    run(rest, ptr, List.replace_at(mem, ptr, wrap(readc(), @cell_size)))
   end
 
   defp run(program = [{:loop, body} | rest], ptr, mem) do
@@ -77,7 +84,14 @@ defmodule Bf do
     end
   end
 
-  defp wrap(a, b \\ 256) do
+  defp scan(ptr, mem, step) do
+    case Enum.at(mem, ptr) do
+      0 -> ptr
+      _ -> scan(wrap(ptr + step, @mem_size), mem, step)
+    end
+  end
+
+  defp wrap(a, b) do
     case rem(a, b) do
       value when value < 0 -> value + b
       value -> value

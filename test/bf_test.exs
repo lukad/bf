@@ -62,5 +62,31 @@ defmodule BfTest do
              {:write}]}
       |> assert_output("0")
     end
+
+    test "scans forwards for closest 0 cell in steps of 1" do
+      {:ok, [{:add, 1},
+             {:move, 9},
+             {:add, 1},
+             {:move, 1},
+             {:add, 64},
+             {:move, -10},
+             {:loop, [move: 1, add: -1]},
+             {:move, -9},
+             {:scan, 1},
+             {:move, 1},
+             {:write}]}
+      |> assert_output("@")
+    end
+
+    test "scans backwards for closest 0 cell in steps of n" do
+      {:ok, [{:move, -1},
+             {:add, 64},
+             {:move, 4},
+             {:add, 1},
+             {:scan, -3},
+             {:move, -1},
+             {:write}]}
+      |> assert_output("@")
+    end
   end
 end
