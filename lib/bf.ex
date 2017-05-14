@@ -26,7 +26,7 @@ defmodule Bf do
       |> Bf.run
       foo
   """
-  @spec run(Bf.Parser.program) :: state
+  @spec run({:ok, Bf.Parser.program}) :: state
   def run({:ok, program}) do
     run(program, 0, List.duplicate(0, 30_000))
   end
