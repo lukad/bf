@@ -92,5 +92,13 @@ defmodule BfParserTest do
     test "skips set 0 and a loop" do
       assert parse("+++[-][.+]-") == {:ok, [{:add, 2}]}
     end
+
+    test "optimizes [>] to a scan 1" do
+      assert parse("[>]") == {:ok, [{:scan, 1}]}
+    end
+
+    test "optimizes [<] to a scan -1" do
+      assert parse("[<]") == {:ok, [{:scan, -1}]}
+    end
   end
 end
