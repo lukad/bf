@@ -21,6 +21,7 @@ defmodule Bf.Parser do
     {:add, integer} |
     {:move, integer} |
     {:set, integer} |
+    {:scan, integer} |
     {:read} |
     {:write} |
     {:loop, program}
@@ -64,6 +65,7 @@ defmodule Bf.Parser do
 
   defp opt([{:loop, []} | rest]), do: opt(rest)
   defp opt([{:loop, [{:add, -1}]} | rest]), do: opt([{:set, 0} | rest])
+  defp opt([{:loop, [{:move, n}]} | rest]), do: opt([{:scan, n} | rest])
   defp opt([{:loop, body} | rest]), do: [{:loop, opt(body)} | opt(rest)]
 
   defp opt([{:add, a}, {:add, b} | rest]), do: opt([{:add, a + b} | rest])
