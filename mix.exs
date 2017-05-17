@@ -35,10 +35,7 @@ defmodule Bf.Mixfile do
   end
 
   defp description do
-    """
-    bf is a simple Brainfuck interpreter written in Elixir.
-    It uses leex and yecc for lexing and parsing.
-    """
+    "bf is a simple Brainfuck interpreter written in Elixir."
   end
 
   def package do
