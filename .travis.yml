@@ -5,11 +5,7 @@ elixir:
 cache:
   directories:
     - deps
-
-env:
-  global:
-    - COMMIT_AUTHOR_EMAIL: "luka.dornhecker@gmail.com"
-
+    
 script:
   - mix dogma
   - mix test
