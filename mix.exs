@@ -8,8 +8,8 @@ defmodule Bf.Mixfile do
       elixir: "~> 1.3",
       description: description(),
       package: package(),
-      build_embedded: Mix.env == :prod,
-      start_permanent: Mix.env == :prod,
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
       deps: deps(),
       escript: [main_module: Bf.CLI],
 
@@ -28,9 +28,7 @@ defmodule Bf.Mixfile do
     [
       {:combine, "~> 0.9.6"},
       {:optimus, "~> 0.1.0", runtime: false},
-      {:dogma, "~> 0.1.15", runtime: false, only: [:dev, :test]},
-      {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.14", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.14", only: [:dev, :test], runtime: false}
     ]
   end
 

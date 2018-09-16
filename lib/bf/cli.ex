@@ -24,7 +24,7 @@ defmodule Bf.CLI do
         program_file: [
           value_name: "PROGRAM_FILE",
           help: "The brainfuck program file to execute",
-          required: true,
+          required: true
         ]
       ],
       subcommands: [
@@ -45,24 +45,26 @@ defmodule Bf.CLI do
 
   defp read_program(program_file) do
     program_file
-    |> File.read
+    |> File.read()
     |> case do
-         {:ok, program} -> program
-         {:error, reason} ->
-           IO.puts("Could not read prgram: #{reason}")
-           System.halt(1)
-       end
+      {:ok, program} ->
+        program
+
+      {:error, reason} ->
+        IO.puts("Could not read prgram: #{reason}")
+        System.halt(1)
+    end
   end
 
   defp run_program(program_file) do
     program_file
     |> read_program
-    |> Bf.Parser.parse
-    |> Bf.run
+    |> Bf.Parser.parse()
+    |> Bf.run()
   end
 
   defp print_ast(program_file) do
-    {:ok, program} = program_file |> read_program |> Bf.Parser.parse
+    {:ok, program} = program_file |> read_program |> Bf.Parser.parse()
     IO.inspect(program, limit: :infinity)
   end
 

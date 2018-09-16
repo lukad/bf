@@ -1,11 +1,12 @@
 language: elixir
 elixir:
-  - 1.4.2
+  - 1.7.3
 
 cache:
   directories:
     - deps
-    
+
 script:
-  - mix dogma
+  - mix deps.update --all
+  - mix format --check-formatted --check-equivalent
   - mix test

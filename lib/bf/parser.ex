@@ -18,13 +18,13 @@ defmodule Bf.Parser do
 
   @typedoc "All possible brainfuck instructions."
   @type instruction ::
-    {:add, integer} |
-    {:move, integer} |
-    {:set, integer} |
-    {:scan, integer} |
-    {:read} |
-    {:write} |
-    {:loop, program}
+          {:add, integer}
+          | {:move, integer}
+          | {:set, integer}
+          | {:scan, integer}
+          | {:read}
+          | {:write}
+          | {:loop, program}
 
   @typedoc "A list of brainfuck instructions."
   @type program :: list(instruction)
@@ -45,9 +45,10 @@ defmodule Bf.Parser do
         {:write}, {:move, 1}, {:add, -2}, {:write}, {:write},
         {:add, 3}, {:write}]}
   """
-  @spec parse(String.t) :: {:ok, program} | {:error, term}
+  @spec parse(String.t()) :: {:ok, program} | {:error, term}
   def parse(source) do
     result = Combine.parse(source, program())
+
     case result do
       {:error, _} -> result
       _ -> {:ok, result |> List.flatten() |> optimize()}
@@ -98,12 +99,12 @@ defmodule Bf.Parser do
 
   @doc false
   defparser lazy(%ParserState{status: :ok} = state, generator) do
-    (generator.()).(state)
+    generator.().(state)
   end
 
   defp loop do
     between(char("["), many(lazy(fn -> instruction() end)), char("]"))
-    |> map(&({:loop, &1}))
+    |> map(&{:loop, &1})
   end
 
   defp sum_instruction(id, plus, minus) do

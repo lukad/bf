@@ -29,13 +29,13 @@ defmodule Bf do
       |> Bf.run
       foo
   """
-  @spec run({:ok, Bf.Parser.program}) :: state
+  @spec run({:ok, Bf.Parser.program()}) :: state
   def run({:ok, program}) do
     run(program, 0, List.duplicate(0, @mem_size))
   end
 
   defp run([{:add, x} | rest], ptr, mem) do
-    run(rest, ptr, List.update_at(mem, ptr, &(wrap(&1 + x, @cell_size))))
+    run(rest, ptr, List.update_at(mem, ptr, &wrap(&1 + x, @cell_size)))
   end
 
   defp run([{:move, x} | rest], ptr, mem) do
@@ -63,6 +63,7 @@ defmodule Bf do
     case Enum.at(mem, ptr) do
       0 ->
         run(rest, ptr, mem)
+
       _ ->
         {p, m} = run(body, ptr, mem)
         run(program, p, m)
@@ -73,14 +74,14 @@ defmodule Bf do
 
   defp putc(ptr, mem) do
     [Enum.at(mem, ptr)]
-    |> IO.write
+    |> IO.write()
   end
 
   defp readc do
     case IO.getn("", 1) do
       :eof -> 0
       {:error, _reason} -> 0
-      char -> char |> to_charlist |> List.first
+      char -> char |> to_charlist |> List.first()
     end
   end
 
