@@ -56,7 +56,10 @@ defmodule Bf do
   end
 
   defp run([{:read} | rest], ptr, mem) do
-    run(rest, ptr, List.replace_at(mem, ptr, wrap(readc(), @cell_size)))
+    case readc() do
+      :eof -> run(rest, ptr, mem)
+      char -> run(rest, ptr, List.replace_at(mem, ptr, wrap(char, @cell_size)))
+    end
   end
 
   defp run(program = [{:loop, body} | rest], ptr, mem) do
@@ -79,8 +82,8 @@ defmodule Bf do
 
   defp readc do
     case IO.getn("", 1) do
-      :eof -> 0
-      {:error, _reason} -> 0
+      :eof -> :eof
+      {:error, _reason} -> :eof
       char -> char |> to_charlist |> List.first()
     end
   end
