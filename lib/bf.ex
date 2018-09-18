@@ -16,7 +16,6 @@ defmodule Bf do
   """
   @type state :: {integer, list(integer)}
 
-  @cell_size 256
   @mem_size 30_000
 
   @doc """
@@ -31,19 +30,23 @@ defmodule Bf do
   """
   @spec run({:ok, Bf.Parser.program()}) :: state
   def run({:ok, program}) do
-    run(program, 0, List.duplicate(0, @mem_size))
+    mem = for i <- List.duplicate(0, 30_000), do: <<i::8>>, into: <<>>
+    {ptr, mem} = run(program, 0, mem)
+    {ptr, :binary.bin_to_list(mem)}
   end
 
   defp run([{:add, x} | rest], ptr, mem) do
-    run(rest, ptr, List.update_at(mem, ptr, &wrap(&1 + x, @cell_size)))
+    <<head::binary-size(ptr), cell, tail::binary>> = mem
+    run(rest, ptr, head <> <<cell + x>> <> tail)
   end
 
   defp run([{:move, x} | rest], ptr, mem) do
-    run(rest, wrap(ptr + x, @mem_size), mem)
+    run(rest, wrap(ptr + x * 8, @mem_size), mem)
   end
 
   defp run([{:set, x} | rest], ptr, mem) do
-    run(rest, ptr, List.update_at(mem, ptr, fn _ -> x end))
+    <<head::binary-size(ptr), _cell, tail::binary>> = mem
+    run(rest, ptr, head <> <<x>> <> tail)
   end
 
   defp run([{:scan, step} | rest], ptr, mem) do
@@ -57,13 +60,19 @@ defmodule Bf do
 
   defp run([{:read} | rest], ptr, mem) do
     case readc() do
-      :eof -> run(rest, ptr, mem)
-      char -> run(rest, ptr, List.replace_at(mem, ptr, wrap(char, @cell_size)))
+      :eof ->
+        run(rest, ptr, mem)
+
+      char ->
+        <<head::binary-size(ptr), _cell, tail::binary>> = mem
+        run(rest, ptr, head <> char <> tail)
     end
   end
 
   defp run(program = [{:loop, body} | rest], ptr, mem) do
-    case Enum.at(mem, ptr) do
+    <<_head::binary-size(ptr), cell, _tail::binary>> = mem
+
+    case cell do
       0 ->
         run(rest, ptr, mem)
 
@@ -76,22 +85,23 @@ defmodule Bf do
   defp run([], ptr, mem), do: {ptr, mem}
 
   defp putc(ptr, mem) do
-    [Enum.at(mem, ptr)]
-    |> IO.write()
+    <<_head::binary-size(ptr), cell, _tail::binary>> = mem
+    IO.binwrite(<<cell>>)
   end
 
   defp readc do
     case IO.getn("", 1) do
-      :eof -> :eof
       {:error, _reason} -> :eof
-      char -> char |> to_charlist |> List.first()
+      char -> char
     end
   end
 
   defp scan(ptr, mem, step) do
-    case Enum.at(mem, ptr) do
+    <<_head::binary-size(ptr), cell, _tail::binary>> = mem
+
+    case cell do
       0 -> ptr
-      _ -> scan(wrap(ptr + step, @mem_size), mem, step)
+      _ -> scan(wrap(ptr + step * 8, @mem_size), mem, step)
     end
   end
 
