@@ -103,7 +103,7 @@ defmodule Bf.Parser do
   end
 
   defp loop do
-    between(char("["), many(lazy(fn -> instruction() end)), char("]"))
+    between(char("["), many(lazy(fn -> instruction() end)) |> skip(comment()), char("]"))
     |> map(&{:loop, &1})
   end
 

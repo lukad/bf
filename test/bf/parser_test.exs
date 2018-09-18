@@ -46,6 +46,10 @@ defmodule BfParserTest do
       assert parse("-[+++]+") == {:ok, [{:add, -1}, {:loop, [{:add, 3}]}, {:add, 1}]}
     end
 
+    test "parses empty loops with comments" do
+      assert parse("[ foobar ]") == {:ok, []}
+    end
+
     test "it skips empty loops" do
       assert parse("++[[[[][]]][]]++") == {:ok, [{:add, 4}]}
     end
