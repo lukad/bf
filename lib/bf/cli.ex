@@ -8,7 +8,8 @@ defmodule Bf.CLI do
   end
 
   defp run(%{args: %{program_file: program_file}}) do
-    run_program(program_file)
+    {_, mem} = run_program(program_file)
+    IO.inspect(mem)
   end
 
   defp run({[:ast], %{args: %{program_file: program_file}}}) do

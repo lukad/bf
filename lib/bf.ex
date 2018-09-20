@@ -41,12 +41,27 @@ defmodule Bf do
   end
 
   defp run([{:move, x} | rest], ptr, mem) do
-    run(rest, wrap(ptr + x * 8, @mem_size), mem)
+    run(rest, wrap(ptr + x, @mem_size), mem)
   end
 
   defp run([{:set, x} | rest], ptr, mem) do
     <<head::binary-size(ptr), _cell, tail::binary>> = mem
     run(rest, ptr, head <> <<x>> <> tail)
+  end
+
+  defp run([{:mul, muls} | rest], ptr, mem) do
+    <<_head::binary-size(ptr), cell, _tail::binary>> = mem
+
+    mem =
+      Enum.reduce(muls, mem, fn {offset, times}, acc ->
+        target = wrap(ptr + offset, @mem_size)
+        <<head::binary-size(target), target, tail::binary>> = acc
+        value = target + cell * times
+        head <> <<value>> <> tail
+      end)
+
+    <<head::binary-size(ptr), _cell, tail::binary>> = mem
+    run(rest, ptr, head <> <<0>> <> tail)
   end
 
   defp run([{:scan, step} | rest], ptr, mem) do
@@ -101,7 +116,7 @@ defmodule Bf do
 
     case cell do
       0 -> ptr
-      _ -> scan(wrap(ptr + step * 8, @mem_size), mem, step)
+      _ -> scan(wrap(ptr + step, @mem_size), mem, step)
     end
   end
 

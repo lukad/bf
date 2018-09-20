@@ -21,6 +21,7 @@ defmodule Bf.Parser do
           {:add, integer}
           | {:move, integer}
           | {:set, integer}
+          | {:mul, list({integer, integer})}
           | {:scan, integer}
           | {:read}
           | {:write}
@@ -67,7 +68,7 @@ defmodule Bf.Parser do
   defp opt([{:loop, []} | rest]), do: opt(rest)
   defp opt([{:loop, [{:add, -1}]} | rest]), do: opt([{:set, 0} | rest])
   defp opt([{:loop, [{:move, n}]} | rest]), do: opt([{:scan, n} | rest])
-  defp opt([{:loop, body} | rest]), do: [{:loop, opt(body)} | opt(rest)]
+  defp opt([{:loop, body} | rest]), do: [opt_loop(body) | opt(rest)]
 
   defp opt([{:add, a}, {:add, b} | rest]), do: opt([{:add, a + b} | rest])
   defp opt([{:move, a}, {:move, b} | rest]), do: opt([{:move, a + b} | rest])
@@ -78,6 +79,28 @@ defmodule Bf.Parser do
   defp opt([{:add, _}, {:set, x} | rest]), do: opt([{:set, x} | rest])
 
   defp opt([ins | rest]), do: [ins | opt(rest)]
+
+  defp opt_loop(body) do
+    case opt_loop(body, 0, []) do
+      {:mul, muls} -> {:mul, muls}
+      _ -> {:loop, opt(body)}
+    end
+  end
+
+  defp opt_loop([{:move, x} | rest], offset, adds), do: opt_loop(rest, offset + x, adds)
+
+  defp opt_loop([{:add, x} | rest], offset, adds) do
+    opt_loop(rest, offset, [{offset, x} | adds])
+  end
+
+  defp opt_loop([], 0, adds) do
+    case Enum.member?(adds, {0, -1}) do
+      true -> {:mul, adds |> List.delete({0, -1}) |> Enum.reverse()}
+      false -> nil
+    end
+  end
+
+  defp opt_loop(_body, _x, _adds), do: nil
 
   defp program do
     skip(comment())
