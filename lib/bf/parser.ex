@@ -3,7 +3,7 @@ defmodule Bf.Parser do
   Parses brainfuck programs.
 
   ## Examples
-      iex> Bf.Parser.parse("+++[]+[-.]>--")
+      iex> Bf.Parser.parse("++++[-.]>--")
       {:ok, [{:add, 4},
              {:loop, [{:add, -1}, {:write}]},
              {:move, 1},
@@ -61,21 +61,21 @@ defmodule Bf.Parser do
 
   defp opt([]), do: []
 
-  defp opt([{:add, 0} | rest]), do: opt(rest)
-  defp opt([{:move, 0} | rest]), do: opt(rest)
-
-  defp opt([{:loop, []} | rest]), do: opt(rest)
   defp opt([{:loop, [{:add, -1}]} | rest]), do: opt([{:set, 0} | rest])
   defp opt([{:loop, [{:move, n}]} | rest]), do: opt([{:scan, n} | rest])
+  defp opt([{:loop, body}, {:loop, _body} | rest]), do: [{:loop, opt(body)} | rest]
   defp opt([{:loop, body} | rest]), do: [{:loop, opt(body)} | opt(rest)]
 
   defp opt([{:add, a}, {:add, b} | rest]), do: opt([{:add, a + b} | rest])
   defp opt([{:move, a}, {:move, b} | rest]), do: opt([{:move, a + b} | rest])
 
   defp opt([{:set, a}, {:set, b} | rest]), do: opt([{:set, a + b} | rest])
-  defp opt([{:set, 0}, {:loop, _} | rest]), do: opt(rest)
+  defp opt([{:set, 0}, {:loop, _} | rest]), do: [{:set, 0} | opt(rest)]
   defp opt([{:set, 0}, {:add, add} | rest]), do: opt([{:set, add} | rest])
   defp opt([{:add, _}, {:set, x} | rest]), do: opt([{:set, x} | rest])
+
+  defp opt([{:add, 0} | rest]), do: opt(rest)
+  defp opt([{:move, 0} | rest]), do: opt(rest)
 
   defp opt([ins | rest]), do: [ins | opt(rest)]
 
