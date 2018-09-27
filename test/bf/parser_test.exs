@@ -47,15 +47,15 @@ defmodule BfParserTest do
     end
 
     test "parses empty loops with comments" do
-      assert parse("[ foobar ]") == {:ok, []}
+      assert parse("[ foobar ]") == {:ok, [{:loop, []}]}
     end
 
-    test "it skips empty loops" do
-      assert parse("++[[[[][]]][]]++") == {:ok, [{:add, 4}]}
+    test "it skips a loop after a loop" do
+      assert parse("++[--][+++]++") == {:ok, [{:add, 2}, {:loop, [{:add, -2}]}, add: 2]}
     end
 
     test "parses nested loops" do
-      expected = {:ok, [add: -1, loop: [add: 2, loop: [add: -2], loop: [add: 2]], add: 1]}
+      expected = {:ok, [add: -1, loop: [add: 2, loop: [add: -2]], add: 1]}
       assert parse("-[++[--][++]]+") == expected
     end
 
@@ -67,7 +67,7 @@ defmodule BfParserTest do
       assert {:error, _} = parse("]")
     end
 
-    test "optimizes a loop that sets the current cell to 0" do
+    test "optimizes clear loops" do
       assert parse("[-]") == {:ok, [{:set, 0}]}
     end
 
@@ -88,7 +88,7 @@ defmodule BfParserTest do
     end
 
     test "skips set 0 and a loop" do
-      assert parse("+++[-][.+]-") == {:ok, [{:add, 2}]}
+      assert parse("+++[-][.+]-") == {:ok, [{:set, -1}]}
     end
 
     test "optimizes [>] to a scan 1" do
