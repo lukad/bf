@@ -12,6 +12,7 @@ defmodule Bf.Mixfile do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       escript: [main_module: Bf.CLI],
+      test_coverage: [tool: Coverex.Task, ignore_modules: [Bf.CLI]],
 
       # docs
       name: "bf",
@@ -29,7 +30,8 @@ defmodule Bf.Mixfile do
       {:combine, "~> 0.9.6"},
       {:optimus, "~> 0.1.0", runtime: false},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
-      {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false}
+      {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false},
+      {:coverex, "~> 1.4.10", only: :test}
     ]
   end
 
