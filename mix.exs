@@ -28,7 +28,8 @@ defmodule Bf.Mixfile do
     [
       {:combine, "~> 0.9.6"},
       {:optimus, "~> 0.1.0", runtime: false},
-      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false},
+      {:credo, "~> 0.10.0", only: [:dev, :test], runtime: false}
     ]
   end
 

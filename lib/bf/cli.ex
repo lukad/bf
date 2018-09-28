@@ -1,6 +1,8 @@
 defmodule Bf.CLI do
   @moduledoc false
 
+  alias Bf.Parser
+
   def main(args) do
     optimus_parser()
     |> Optimus.parse!(args)
@@ -59,12 +61,13 @@ defmodule Bf.CLI do
   defp run_program(program_file) do
     program_file
     |> read_program
-    |> Bf.Parser.parse()
+    |> Parser.parse()
     |> Bf.run()
   end
 
   defp print_ast(program_file) do
-    {:ok, program} = program_file |> read_program |> Bf.Parser.parse()
+    {:ok, program} = program_file |> read_program |> Parser.parse()
+    # credo:disable-for-next-line Credo.Check.Warning.IoInspect
     IO.inspect(program, limit: :infinity)
   end
 

@@ -1,3 +1,5 @@
+# credo:disable-for-this-file Credo.Check.Refactor.PipeChainStart
+
 defmodule Bf.Parser do
   @moduledoc """
   Parses brainfuck programs.
