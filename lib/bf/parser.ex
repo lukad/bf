@@ -121,7 +121,6 @@ defmodule Bf.Parser do
       case x do
         ^plus -> acc + 1
         ^minus -> acc - 1
-        _ -> acc
       end
     end)
   end

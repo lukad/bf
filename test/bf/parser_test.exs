@@ -27,7 +27,7 @@ defmodule BfParserTest do
     end
 
     test "groups consecutive occurences of + and -" do
-      assert parse("++---+-----") == {:ok, [{:add, -5}]}
+      assert parse("++---<>+-----") == {:ok, [{:add, -5}]}
     end
 
     test "groups consecutive occurences of + and - with non code inbetween" do
@@ -35,7 +35,7 @@ defmodule BfParserTest do
     end
 
     test "groups consecutive occurences of > and <" do
-      assert parse("<<<><>>>>") == {:ok, [{:move, 1}]}
+      assert parse("<<<>+-<>>>>") == {:ok, [{:move, 1}]}
     end
 
     test "groups consecutive occurences of < and > with non code inbetween" do
