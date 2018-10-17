@@ -83,8 +83,8 @@ defmodule BfParserTest do
       assert parse("-[-]+++") == {:ok, [{:set, 3}]}
     end
 
-    test "it combines consecutive sets" do
-      assert parse("[-]+++++[-]--") == {:ok, [{:set, 3}]}
+    test "it only applies the last of consecutive sets" do
+      assert parse("[-]++[-]+++++[-]--") == {:ok, [{:set, -2}]}
     end
 
     test "skips set 0 and a loop" do

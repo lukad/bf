@@ -75,7 +75,7 @@ defmodule Bf.Parser do
   defp opt([{:add, a}, {:add, b} | rest]), do: opt([{:add, a + b} | rest])
   defp opt([{:move, a}, {:move, b} | rest]), do: opt([{:move, a + b} | rest])
 
-  defp opt([{:set, a}, {:set, b} | rest]), do: opt([{:set, a + b} | rest])
+  defp opt([{:set, _}, {:set, b} | rest]), do: opt([{:set, b} | rest])
   defp opt([{:set, 0}, {:loop, _} | rest]), do: [{:set, 0} | opt(rest)]
   defp opt([{:set, 0}, {:add, add} | rest]), do: opt([{:set, add} | rest])
   defp opt([{:add, _}, {:set, x} | rest]), do: opt([{:set, x} | rest])
