@@ -1,4 +1,6 @@
 defmodule Bf do
+  use Bitwise
+
   @moduledoc """
   Interprets brainfuck programs.
 
@@ -30,23 +32,24 @@ defmodule Bf do
   """
   @spec run({:ok, Bf.Parser.program()}) :: state
   def run({:ok, program}) do
-    mem = for i <- List.duplicate(0, 30_000), do: <<i::8>>, into: <<>>
+    mem = :array.new(@mem_size, default: 0)
     {ptr, mem} = run(program, 0, mem)
-    {ptr, :binary.bin_to_list(mem)}
+    {ptr, :array.to_list(mem)}
   end
 
   defp run([{:add, x} | rest], ptr, mem) do
-    <<head::binary-size(ptr), cell, tail::binary>> = mem
-    run(rest, ptr, head <> <<cell + x>> <> tail)
+    cell = :array.get(ptr, mem)
+    new_mem = :array.set(ptr, cell + x &&& 0xFF, mem)
+    run(rest, ptr, new_mem)
   end
 
   defp run([{:move, x} | rest], ptr, mem) do
-    run(rest, wrap(ptr + x * 8, @mem_size), mem)
+    run(rest, wrap(ptr + x, @mem_size), mem)
   end
 
   defp run([{:set, x} | rest], ptr, mem) do
-    <<head::binary-size(ptr), _cell, tail::binary>> = mem
-    run(rest, ptr, head <> <<x>> <> tail)
+    new_mem = :array.set(ptr, x &&& 0xFF, mem)
+    run(rest, ptr, new_mem)
   end
 
   defp run([{:scan, step} | rest], ptr, mem) do
@@ -64,13 +67,13 @@ defmodule Bf do
         run(rest, ptr, mem)
 
       char ->
-        <<head::binary-size(ptr), _cell, tail::binary>> = mem
-        run(rest, ptr, head <> char <> tail)
+        new_mem = :array.set(ptr, char &&& 0xFF, mem)
+        run(rest, ptr, new_mem)
     end
   end
 
   defp run(program = [{:loop, body} | rest], ptr, mem) do
-    <<_head::binary-size(ptr), cell, _tail::binary>> = mem
+    cell = :array.get(ptr, mem)
 
     case cell do
       0 ->
@@ -85,23 +88,24 @@ defmodule Bf do
   defp run([], ptr, mem), do: {ptr, mem}
 
   defp putc(ptr, mem) do
-    <<_head::binary-size(ptr), cell, _tail::binary>> = mem
+    cell = :array.get(ptr, mem)
     IO.binwrite(<<cell>>)
   end
 
   defp readc do
     case IO.getn("", 1) do
       {:error, _reason} -> :eof
-      char -> char
+      :eof -> :eof
+      <<char>> -> char
     end
   end
 
   defp scan(ptr, mem, step) do
-    <<_head::binary-size(ptr), cell, _tail::binary>> = mem
+    cell = :array.get(ptr, mem)
 
     case cell do
       0 -> ptr
-      _ -> scan(wrap(ptr + step * 8, @mem_size), mem, step)
+      _ -> scan(wrap(ptr + step, @mem_size), mem, step)
     end
   end
 
