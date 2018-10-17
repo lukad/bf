@@ -64,6 +64,10 @@ defmodule Bf.Parser do
   defp opt([]), do: []
 
   defp opt([{:loop, [{:add, -1}]} | rest]), do: opt([{:set, 0} | rest])
+
+  defp opt([{:loop, body} | [{:add, n} | rest]]),
+    do: opt([{:loop, opt(body)} | [{:set, n} | rest]])
+
   defp opt([{:loop, [{:move, n}]} | rest]), do: opt([{:scan, n} | rest])
   defp opt([{:loop, body}, {:loop, _body} | rest]), do: [{:loop, opt(body)} | rest]
   defp opt([{:loop, body} | rest]), do: [{:loop, opt(body)} | opt(rest)]

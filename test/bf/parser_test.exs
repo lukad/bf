@@ -43,7 +43,7 @@ defmodule BfParserTest do
     end
 
     test "parses simple loops" do
-      assert parse("-[+++]+") == {:ok, [{:add, -1}, {:loop, [{:add, 3}]}, {:add, 1}]}
+      assert parse("-[+++]+") == {:ok, [{:add, -1}, {:loop, [{:add, 3}]}, {:set, 1}]}
     end
 
     test "parses empty loops with comments" do
@@ -51,11 +51,11 @@ defmodule BfParserTest do
     end
 
     test "it skips a loop after a loop" do
-      assert parse("++[--][+++]++") == {:ok, [{:add, 2}, {:loop, [{:add, -2}]}, add: 2]}
+      assert parse("++[--][+++]++") == {:ok, [{:add, 2}, {:loop, [{:add, -2}]}, set: 2]}
     end
 
     test "parses nested loops" do
-      expected = {:ok, [add: -1, loop: [add: 2, loop: [add: -2]], add: 1]}
+      expected = {:ok, [add: -1, loop: [add: 2, loop: [add: -2]], set: 1]}
       assert parse("-[++[--][++]]+") == expected
     end
 
@@ -89,6 +89,10 @@ defmodule BfParserTest do
 
     test "skips set 0 and a loop" do
       assert parse("+++[-][.+]-") == {:ok, [{:set, -1}]}
+    end
+
+    test "turns add after a loop into a set" do
+      assert parse("+[-.]++") == {:ok, [{:add, 1}, {:loop, [{:add, -1}, {:write}]}, {:set, 2}]}
     end
 
     test "optimizes [>] to a scan 1" do
