@@ -4,7 +4,7 @@ defmodule Bf.Mixfile do
   def project do
     [
       app: :bf,
-      version: "1.3.0",
+      version: "1.4.0",
       elixir: "~> 1.3",
       description: description(),
       package: package(),
