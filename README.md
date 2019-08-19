@@ -1,4 +1,4 @@
-# bf [![Build Status](https://semaphoreci.com/api/v1/lukad/bf/branches/master/badge.svg)](https://semaphoreci.com/lukad/bf)
+# bf
 
 `bf` is a simple [Brainfuck](https://esolangs.org/wiki/brainfuck) interpreter written in Elixir.
 
