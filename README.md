@@ -1,3 +1,7 @@
+[![Hex.pm Version](https://img.shields.io/hexpm/v/bf)](https://hex.pm/packages/bf)
+[![Hex.pm Downloads](https://img.shields.io/hexpm/dt/bf)](https://hex.pm/packages/bf)
+[![Hex.pm License](https://img.shields.io/hexpm/l/bf)](https://hex.pm/packages/bf)
+
 # bf
 
 `bf` is a simple [Brainfuck](https://esolangs.org/wiki/brainfuck) interpreter written in Elixir.
@@ -55,10 +59,10 @@ Hello World!
 
 ## Interpreter Info
 
-* Cells are 8 bits wide
-* Cells wrap around 256
-  * `255 + 1 = 0`
-  * `0 - 1 = 255`
-* The tape is 30000 cells large
-* The tape pointer wraps around 30000
-* '0' on STDIN signals EOF
+- Cells are 8 bits wide
+- Cells wrap around 256
+  - `255 + 1 = 0`
+  - `0 - 1 = 255`
+- The tape is 30000 cells large
+- The tape pointer wraps around 30000
+- '0' on STDIN signals EOF
