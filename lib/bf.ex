@@ -1,5 +1,5 @@
 defmodule Bf do
-  use Bitwise
+  import Bitwise
 
   @moduledoc """
   Interprets brainfuck programs.
