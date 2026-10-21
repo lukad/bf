@@ -27,7 +27,7 @@ defmodule Bf.Mixfile do
   defp deps do
     [
       {:combine, "~> 0.10"},
-      {:optimus, "~> 0.6", runtime: false},
+      {:optimus, "~> 0.6", runtime: false, optional: true},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
