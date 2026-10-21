@@ -26,6 +26,7 @@ defmodule Bf.Mixfile do
 
   defp deps do
     [
+      {:git_ops, "~> 2.0", only: [:dev], runtime: false},
       {:combine, "~> 0.10"},
       {:optimus, "~> 0.6", runtime: false, optional: true},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},
