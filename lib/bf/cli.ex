@@ -2,8 +2,6 @@ if Code.ensure_loaded?(Optimus) do
   defmodule Bf.CLI do
     @moduledoc false
 
-    alias Bf.Parser
-
     def main(args) do
       optimus_parser()
       |> Optimus.parse!(args)
@@ -59,15 +57,28 @@ if Code.ensure_loaded?(Optimus) do
       end
     end
 
+    defp parse_program(program_file) do
+      program_file
+      |> read_program()
+      |> Bf.parse()
+      |> case do
+        {:ok, program} ->
+          program
+
+        {:error, reason} ->
+          IO.puts("Could not parse program: #{reason}")
+          System.halt(1)
+      end
+    end
+
     defp run_program(program_file) do
       program_file
-      |> read_program
-      |> Parser.parse()
+      |> parse_program()
       |> Bf.run()
     end
 
     defp print_ast(program_file) do
-      {:ok, program} = program_file |> read_program |> Parser.parse()
+      program = parse_program(program_file)
       # credo:disable-for-next-line Credo.Check.Warning.IoInspect
       IO.inspect(program, limit: :infinity)
     end

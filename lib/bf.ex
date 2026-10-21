@@ -6,8 +6,8 @@ defmodule Bf do
 
   ## Examples
 
-      Bf.Parser.parse("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
-      |> Bf.run()
+      {:ok, program} = Bf.parse("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
+      Bf.run(program)
       Hello
   """
 
@@ -16,22 +16,39 @@ defmodule Bf do
 
   It is the current cell index and the memory.
   """
-  @type state :: {integer, list(integer)}
+  @type state :: {integer, :array.array(byte())}
 
   @mem_size 30_000
 
   @doc """
-  Parses and executes a brainfuck program. Returns the machine's state.
+  Parses and optimizes a brainfuck program from a string.
 
   ## Examples
 
-      Bf.Parser.parse("++++++++++[->++++++++++<]>++.+++++++++.." <>
-                      "<+++++++++[->---------<]>-----------------.---.<")
-      |> Bf.run
-      foo
+      iex> Bf.parse("+++++++++[>++++++++<-]>.")
+      {:ok, [{:add, 9}, {:loop, [move: 1, add: 8, move: -1, add: -1]}, {:move, 1}, :write]}
+
   """
-  @spec run({:ok, Bf.Parser.program()}) :: state
-  def run({:ok, program}) do
+  @spec parse(String.t()) :: {:ok, Bf.Parser.program()} | {:error, term()}
+  def parse(source) do
+    with {:ok, program} <- Bf.Parser.parse(source) do
+      {:ok, Bf.Optimizer.optimize(program)}
+    end
+  end
+
+  @doc """
+  Executes a brainfuck program. Returns the machine's state.
+
+  ## Examples
+
+      {:ok, program} = Bf.parse("++++++++++[->++++++++++<]>++.+++++++++.." <>
+                                "<+++++++++[->---------<]>-----------------.---.<")
+      Bf.run(program)
+      foo
+
+  """
+  @spec run(Bf.Parser.program()) :: state
+  def run(program) do
     mem = :array.new(@mem_size, default: 0)
     {ptr, mem} = run(program, 0, mem)
     {ptr, :array.to_list(mem)}
@@ -56,12 +73,12 @@ defmodule Bf do
     run(rest, scan(ptr, mem, step), mem)
   end
 
-  defp run([{:write} | rest], ptr, mem) do
+  defp run([:write | rest], ptr, mem) do
     putc(ptr, mem)
     run(rest, ptr, mem)
   end
 
-  defp run([{:read} | rest], ptr, mem) do
+  defp run([:read | rest], ptr, mem) do
     case readc() do
       :eof ->
         run(rest, ptr, mem)
