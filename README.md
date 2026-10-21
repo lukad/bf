@@ -1,4 +1,5 @@
 [![Hex.pm Version](https://img.shields.io/hexpm/v/bf)](https://hex.pm/packages/bf)
+[![Hex.pm Docs](https://img.shields.io/badge/hex-docs-orange.svg)](https://bf.hexdocs.pm)
 [![Hex.pm Downloads](https://img.shields.io/hexpm/dt/bf)](https://hex.pm/packages/bf)
 [![Hex.pm License](https://img.shields.io/hexpm/l/bf)](https://hex.pm/packages/bf)
 
