@@ -68,15 +68,15 @@ defmodule Bf do
   """
   @spec run(program) :: state
   def run(program) do
-    mem = :array.new(@mem_size, default: 0)
-    {ptr, mem} = run(program, 0, mem)
-    {ptr, :array.to_list(mem)}
+    mem = :atomics.new(@mem_size, signed: false)
+    ptr = run(program, 0, mem)
+    {ptr, for(i <- 1..@mem_size, do: :atomics.get(mem, i))}
   end
 
+  # Memory is mutable, so run/3 only returns the pointer.
   defp run([{:add, x} | rest], ptr, mem) do
-    cell = :array.get(ptr, mem)
-    new_mem = :array.set(ptr, cell + x &&& 0xFF, mem)
-    run(rest, ptr, new_mem)
+    put(mem, ptr, get(mem, ptr) + x &&& 0xFF)
+    run(rest, ptr, mem)
   end
 
   defp run([{:move, x} | rest], ptr, mem) do
@@ -84,8 +84,8 @@ defmodule Bf do
   end
 
   defp run([{:set, x} | rest], ptr, mem) do
-    new_mem = :array.set(ptr, x &&& 0xFF, mem)
-    run(rest, ptr, new_mem)
+    put(mem, ptr, x &&& 0xFF)
+    run(rest, ptr, mem)
   end
 
   defp run([{:scan, step} | rest], ptr, mem) do
@@ -93,15 +93,15 @@ defmodule Bf do
   end
 
   defp run([{:mul_run, transfers} | rest], ptr, mem) do
-    cell = :array.get(ptr, mem)
+    cell = get(mem, ptr)
 
-    mem =
-      Enum.reduce(transfers, mem, fn {offset, factor}, mem ->
-        target = wrap(ptr + offset, @mem_size)
-        :array.set(target, :array.get(target, mem) + cell * factor &&& 0xFF, mem)
-      end)
+    Enum.each(transfers, fn {offset, factor} ->
+      target = wrap(ptr + offset, @mem_size)
+      put(mem, target, get(mem, target) + cell * factor &&& 0xFF)
+    end)
 
-    run(rest, ptr, :array.set(ptr, 0, mem))
+    put(mem, ptr, 0)
+    run(rest, ptr, mem)
   end
 
   defp run([:write | rest], ptr, mem) do
@@ -111,32 +111,24 @@ defmodule Bf do
 
   defp run([:read | rest], ptr, mem) do
     case readc() do
-      :eof ->
-        run(rest, ptr, mem)
-
-      char ->
-        new_mem = :array.set(ptr, char &&& 0xFF, mem)
-        run(rest, ptr, new_mem)
+      :eof -> :ok
+      char -> put(mem, ptr, char &&& 0xFF)
     end
+
+    run(rest, ptr, mem)
   end
 
   defp run(program = [{:loop, body} | rest], ptr, mem) do
-    cell = :array.get(ptr, mem)
-
-    case cell do
-      0 ->
-        run(rest, ptr, mem)
-
-      _ ->
-        {p, m} = run(body, ptr, mem)
-        run(program, p, m)
+    case get(mem, ptr) do
+      0 -> run(rest, ptr, mem)
+      _ -> run(program, run(body, ptr, mem), mem)
     end
   end
 
-  defp run([], ptr, mem), do: {ptr, mem}
+  defp run([], ptr, _mem), do: ptr
 
   defp putc(ptr, mem) do
-    cell = :array.get(ptr, mem)
+    cell = get(mem, ptr)
     IO.binwrite(<<cell>>)
   end
 
@@ -149,13 +141,16 @@ defmodule Bf do
   end
 
   defp scan(ptr, mem, step) do
-    cell = :array.get(ptr, mem)
+    cell = get(mem, ptr)
 
     case cell do
       0 -> ptr
       _ -> scan(wrap(ptr + step, @mem_size), mem, step)
     end
   end
+
+  defp get(mem, ptr), do: :atomics.get(mem, ptr + 1)
+  defp put(mem, ptr, value), do: :atomics.put(mem, ptr + 1, value)
 
   defp wrap(a, b) do
     case rem(a, b) do
