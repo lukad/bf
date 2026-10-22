@@ -114,7 +114,7 @@ defmodule Bf do
     run(rest, ptr, mem)
   end
 
-  defp run(program = [{:loop, body} | rest], ptr, mem) do
+  defp run([{:loop, body} | rest] = program, ptr, mem) do
     case get(mem, ptr) do
       0 -> run(rest, ptr, mem)
       _ -> run(program, run(body, ptr, mem), mem)
