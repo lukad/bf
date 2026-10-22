@@ -12,6 +12,7 @@ defmodule Bf.Mixfile do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
+      test_coverage: [ignore_modules: [BfTest.Programs]],
       escript: [main_module: Bf.CLI, emu_args: "-kernel standard_io_encoding latin1"],
 
       # docs

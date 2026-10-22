@@ -3,18 +3,18 @@ if Code.ensure_loaded?(Optimus) do
     @moduledoc false
 
     def main(args) do
-      optimus_parser()
-      |> Optimus.parse!(args)
-      |> run
+      status =
+        optimus_parser()
+        |> Optimus.parse!(args)
+        |> run()
+
+      if status != 0, do: System.halt(status)
     end
 
-    defp run(%{args: %{program_file: program_file}}) do
-      run_program(program_file)
-    end
-
-    defp run({[:ast], %{args: %{program_file: program_file}}}) do
-      print_ast(program_file)
-    end
+    @doc false
+    @spec run(Optimus.ParseResult.t() | {[atom], Optimus.ParseResult.t()}) :: non_neg_integer
+    def run({[:ast], %{args: %{program_file: program_file}}}), do: print_ast(program_file)
+    def run(%{args: %{program_file: program_file}}), do: run_program(program_file)
 
     defp optimus_parser do
       Optimus.new!(
@@ -44,48 +44,40 @@ if Code.ensure_loaded?(Optimus) do
       )
     end
 
-    defp read_program(program_file) do
-      program_file
-      |> File.read()
-      |> case do
-        {:ok, program} ->
-          program
+    defp load_program(program_file) do
+      with {:read, {:ok, source}} <- {:read, File.read(program_file)},
+           {:parse, {:ok, program}} <- {:parse, Bf.parse(source)} do
+        {:ok, program}
+      else
+        {:read, {:error, reason}} ->
+          IO.puts(:stderr, "Could not read program: #{:file.format_error(reason)}")
+          1
 
-        {:error, reason} ->
-          IO.puts("Could not read prgram: #{reason}")
-          System.halt(1)
-      end
-    end
-
-    defp parse_program(program_file) do
-      program_file
-      |> read_program()
-      |> Bf.parse()
-      |> case do
-        {:ok, program} ->
-          program
-
-        {:error, error} ->
-          IO.puts("Could not parse program: #{Exception.message(error)}")
-          System.halt(1)
+        {:parse, {:error, error}} ->
+          IO.puts(:stderr, "Could not parse program: #{Exception.message(error)}")
+          1
       end
     end
 
     defp run_program(program_file) do
-      program = parse_program(program_file)
-      :logger.set_module_level(:user_drv, :none)
+      with {:ok, program} <- load_program(program_file) do
+        :logger.set_module_level(:user_drv, :none)
 
-      try do
-        Bf.run(program, IO.binstream(:stdio, 1), IO.binstream(:stdio, 1))
-      catch
-        :error, :terminated -> System.halt(141)
+        try do
+          Bf.run(program, IO.binstream(:stdio, 1), IO.binstream(:stdio, 1))
+          0
+        catch
+          :error, :terminated -> 141
+        end
       end
     end
 
     defp print_ast(program_file) do
-      program = parse_program(program_file)
-      # credo:disable-for-next-line Credo.Check.Warning.IoInspect
-      IO.inspect(program, limit: :infinity)
+      with {:ok, program} <- load_program(program_file) do
+        # credo:disable-for-next-line Credo.Check.Warning.IoInspect
+        IO.inspect(program, limit: :infinity)
+        0
+      end
     end
 
     defp version do

@@ -145,6 +145,11 @@ defmodule BfTest do
       |> assert_output(<<246>>)
     end
 
+    test "wraps moves of more than the tape size around the tape" do
+      [{:move, -30_001}, {:add, 1}, {:move, 30_001}, {:move, -1}, :write]
+      |> assert_output(<<1>>)
+    end
+
     test "wraps multiplied cell values around 256" do
       [{:add, 200}, {:mul_run, [{1, 2}]}, {:move, 1}, :write]
       |> assert_output(<<144>>)

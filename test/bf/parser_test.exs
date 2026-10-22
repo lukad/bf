@@ -78,6 +78,12 @@ defmodule BfParserTest do
                {:error, %ParseError{reason: :unmatched_close, line: 3, column: 3}}
     end
 
+    test "raises parse errors with a message" do
+      assert_raise ParseError, "unmatched ] at line 3, column 7", fn ->
+        raise ParseError, reason: :unmatched_close, line: 3, column: 7
+      end
+    end
+
     test "counts columns in graphemes" do
       assert parse("ä é ]") == {:error, %ParseError{reason: :unmatched_close, line: 1, column: 5}}
     end

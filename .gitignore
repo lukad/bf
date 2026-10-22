@@ -7,3 +7,4 @@ erl_crash.dump
 src/*.erl
 /bf
 doc
+/tmp
