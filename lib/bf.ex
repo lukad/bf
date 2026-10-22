@@ -39,7 +39,7 @@ defmodule Bf do
 
   @mem_size 30_000
 
-  @compile {:inline, get: 2, put: 3, wrap: 2}
+  @compile {:inline, get: 2, put: 3, wrap: 1}
 
   @doc """
   Parses and optimizes a brainfuck program from a string.
@@ -82,7 +82,7 @@ defmodule Bf do
   end
 
   defp run([{:move, x} | rest], ptr, mem) do
-    run(rest, wrap(ptr + x, @mem_size), mem)
+    run(rest, wrap(ptr + x), mem)
   end
 
   defp run([{:set, x} | rest], ptr, mem) do
@@ -98,7 +98,7 @@ defmodule Bf do
     cell = get(mem, ptr)
 
     Enum.each(transfers, fn {offset, factor} ->
-      target = wrap(ptr + offset, @mem_size)
+      target = wrap(ptr + offset)
       put(mem, target, get(mem, target) + cell * factor &&& 0xFF)
     end)
 
@@ -147,16 +147,19 @@ defmodule Bf do
 
     case cell do
       0 -> ptr
-      _ -> scan(wrap(ptr + step, @mem_size), mem, step)
+      _ -> scan(wrap(ptr + step), mem, step)
     end
   end
 
   defp get(mem, ptr), do: :atomics.get(mem, ptr + 1)
   defp put(mem, ptr, value), do: :atomics.put(mem, ptr + 1, value)
 
-  defp wrap(a, b) do
-    case rem(a, b) do
-      value when value < 0 -> value + b
+  defp wrap(ptr) when ptr >= 0 and ptr < @mem_size, do: ptr
+  defp wrap(ptr) when ptr < 0 and ptr >= -@mem_size, do: ptr + @mem_size
+
+  defp wrap(ptr) do
+    case rem(ptr, @mem_size) do
+      value when value < 0 -> value + @mem_size
       value -> value
     end
   end
