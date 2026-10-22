@@ -1,10 +1,12 @@
 defmodule Bf.Mixfile do
   use Mix.Project
 
+  @version "1.4.0"
+
   def project do
     [
       app: :bf,
-      version: "1.4.0",
+      version: @version,
       elixir: "~> 1.16",
       description: description(),
       package: package(),
