@@ -68,11 +68,6 @@ defmodule BfOptimizerTest do
   end
 
   describe "optimize/1 loop rewrites" do
-    defp optimize_source(source) do
-      {:ok, program} = Bf.Parser.parse(source)
-      optimize(program)
-    end
-
     test "optimizes clear loops" do
       assert optimize_source("[-]") == [set: 0]
     end
@@ -100,5 +95,67 @@ defmodule BfOptimizerTest do
     test "optimizes [<] to a scan -1" do
       assert optimize_source("[<]") == [scan: -1]
     end
+  end
+
+  describe "optimize/1 multiplication loops" do
+    test "optimizes a single transfer" do
+      assert optimize_source("[->+++<]") == [mul_run: [{1, 3}]]
+    end
+
+    test "optimizes multiple transfers" do
+      assert optimize_source("[->++>+++<<]") == [mul_run: [{1, 2}, {2, 3}]]
+    end
+
+    test "allows the decrement anywhere in the body" do
+      assert optimize_source("[>+<-]") == [mul_run: [{1, 1}]]
+    end
+
+    test "sorts transfers by offset" do
+      assert optimize_source("[->>++<<<+>]") == [mul_run: [{-1, 1}, {2, 2}]]
+    end
+
+    test "sums repeated transfers to the same offset" do
+      assert optimize_source("[->+>+<+<]") == [mul_run: [{1, 2}, {2, 1}]]
+    end
+
+    test "keeps negative factors" do
+      assert optimize_source("[->--<]") == [mul_run: [{1, -2}]]
+    end
+
+    test "skips a multiplication loop after set 0" do
+      assert optimize_source("[-][->+<]") == [set: 0]
+    end
+
+    test "optimizes multiplication loops nested in other loops" do
+      assert optimize_source("+[>[->+<]<-]") ==
+               [add: 1, loop: [move: 1, mul_run: [{1, 1}], move: -1, add: -1]]
+    end
+
+    test "keeps loops whose moves don't cancel out" do
+      assert optimize_source("[->+]") == [loop: [add: -1, move: 1, add: 1]]
+    end
+
+    test "keeps loops that don't decrement the source by one" do
+      assert optimize_source("[-->+<]") == [loop: [add: -2, move: 1, add: 1, move: -1]]
+      assert optimize_source("[+>+<]") == [loop: [add: 1, move: 1, add: 1, move: -1]]
+      assert optimize_source("[>+<]") == [loop: [move: 1, add: 1, move: -1]]
+    end
+
+    test "keeps loops with io" do
+      assert optimize_source("[->.+<]") == [
+               loop: [{:add, -1}, {:move, 1}, :write, {:add, 1}, {:move, -1}]
+             ]
+
+      assert optimize_source("[->,<]") == [loop: [{:add, -1}, {:move, 1}, :read, {:move, -1}]]
+    end
+
+    test "keeps loops with nested loops" do
+      assert optimize_source("[->[-]<]") == [loop: [add: -1, move: 1, set: 0, move: -1]]
+    end
+  end
+
+  defp optimize_source(source) do
+    {:ok, program} = Bf.Parser.parse(source)
+    optimize(program)
   end
 end

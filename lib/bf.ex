@@ -22,6 +22,7 @@ defmodule Bf do
           | {:move, integer}
           | {:set, integer}
           | {:scan, integer}
+          | {:mul_run, [{integer, integer}]}
           | :read
           | :write
           | {:loop, program}
@@ -44,7 +45,7 @@ defmodule Bf do
   ## Examples
 
       iex> Bf.parse("+++++++++[>++++++++<-]>.")
-      {:ok, [{:add, 9}, {:loop, [move: 1, add: 8, move: -1, add: -1]}, {:move, 1}, :write]}
+      {:ok, [{:add, 9}, {:mul_run, [{1, 8}]}, {:move, 1}, :write]}
 
   """
   @spec parse(String.t()) :: {:ok, program} | {:error, term()}
@@ -89,6 +90,18 @@ defmodule Bf do
 
   defp run([{:scan, step} | rest], ptr, mem) do
     run(rest, scan(ptr, mem, step), mem)
+  end
+
+  defp run([{:mul_run, transfers} | rest], ptr, mem) do
+    cell = :array.get(ptr, mem)
+
+    mem =
+      Enum.reduce(transfers, mem, fn {offset, factor}, mem ->
+        target = wrap(ptr + offset, @mem_size)
+        :array.set(target, :array.get(target, mem) + cell * factor &&& 0xFF, mem)
+      end)
+
+    run(rest, ptr, :array.set(ptr, 0, mem))
   end
 
   defp run([:write | rest], ptr, mem) do

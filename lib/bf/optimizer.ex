@@ -43,11 +43,37 @@ defmodule Bf.Optimizer do
   defp optimize_non_loop({:set, n}, [{:add, _} | out]), do: optimize_non_loop({:set, n}, out)
   defp optimize_non_loop({:set, n}, [{:set, _} | out]), do: optimize_non_loop({:set, n}, out)
   defp optimize_non_loop({:loop, _}, [{:set, 0} | _] = out), do: out
+  defp optimize_non_loop({:mul_run, _}, [{:set, 0} | _] = out), do: out
 
   defp optimize_non_loop(ins, out), do: [ins | out]
 
+  defp optimize_loop([]), do: {:loop, []}
   defp optimize_loop([{:add, -1}]), do: {:set, 0}
   defp optimize_loop([{:move, n}]), do: {:scan, n}
   defp optimize_loop([{:set, 0}]), do: {:set, 0}
-  defp optimize_loop(body), do: {:loop, body}
+  defp optimize_loop(body), do: optimize_mul(body)
+
+  defp optimize_mul(body) do
+    with {:ok, 0, muls} <- collect_muls(body, 0, %{}),
+         {-1, transfers} <- Map.pop(muls, 0) do
+      case Enum.sort(transfers) do
+        [] -> {:set, 0}
+        transfers -> {:mul_run, transfers}
+      end
+    else
+      _ -> {:loop, body}
+    end
+  end
+
+  defp collect_muls([], offset, muls), do: {:ok, offset, muls}
+
+  defp collect_muls([{:add, n} | rest], offset, muls) do
+    collect_muls(rest, offset, Map.update(muls, offset, n, &(&1 + n)))
+  end
+
+  defp collect_muls([{:move, n} | rest], offset, muls) do
+    collect_muls(rest, offset + n, muls)
+  end
+
+  defp collect_muls(_, _, _), do: :error
 end

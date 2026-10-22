@@ -103,6 +103,42 @@ defmodule BfTest do
       [{:move, -1}, {:add, 64}, {:move, 4}, {:add, 1}, {:scan, -3}, {:move, -1}, :write]
       |> assert_output("@")
     end
+
+    test "multiplies the current cell into other cells and clears it" do
+      [
+        {:add, 3},
+        {:move, 1},
+        {:add, 1},
+        {:move, -1},
+        {:mul_run, [{1, 2}, {2, 3}]},
+        :write,
+        {:move, 1},
+        :write,
+        {:move, 1},
+        :write
+      ]
+      |> assert_output(<<0, 7, 9>>)
+    end
+
+    test "multiplies with negative factors and offsets" do
+      [{:move, 1}, {:add, 5}, {:mul_run, [{-1, -2}]}, {:move, -1}, :write]
+      |> assert_output(to_string([246]))
+    end
+
+    test "wraps multiplied cell values around 256" do
+      [{:add, 200}, {:mul_run, [{1, 2}]}, {:move, 1}, :write]
+      |> assert_output(to_string([144]))
+    end
+
+    test "wraps multiplication offsets around the tape" do
+      [{:add, 7}, {:mul_run, [{-1, 1}]}, {:move, -1}, :write]
+      |> assert_output(<<7>>)
+    end
+
+    test "does nothing when multiplying 0" do
+      [{:move, 1}, {:add, 4}, {:move, -1}, {:mul_run, [{1, 3}]}, {:move, 1}, :write]
+      |> assert_output(<<4>>)
+    end
   end
 
   describe "Bf.parse/1 |> Bf.run/1" do
