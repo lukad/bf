@@ -95,13 +95,7 @@ defmodule Bf do
   end
 
   defp run([{:mul_run, transfers} | rest], ptr, mem) do
-    cell = get(mem, ptr)
-
-    Enum.each(transfers, fn {offset, factor} ->
-      target = wrap(ptr + offset)
-      put(mem, target, get(mem, target) + cell * factor &&& 0xFF)
-    end)
-
+    mul_run(transfers, ptr, get(mem, ptr), mem)
     put(mem, ptr, 0)
     run(rest, ptr, mem)
   end
@@ -128,6 +122,14 @@ defmodule Bf do
   end
 
   defp run([], ptr, _mem), do: ptr
+
+  defp mul_run([], _ptr, _cell, _mem), do: :ok
+
+  defp mul_run([{offset, factor} | transfers], ptr, cell, mem) do
+    target = wrap(ptr + offset)
+    put(mem, target, get(mem, target) + cell * factor &&& 0xFF)
+    mul_run(transfers, ptr, cell, mem)
+  end
 
   defp putc(ptr, mem) do
     cell = get(mem, ptr)
