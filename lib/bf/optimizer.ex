@@ -23,7 +23,7 @@ defmodule Bf.Optimizer do
   defp optimize_instruction({:move, 0}, out), do: out
 
   defp optimize_instruction({:loop, body}, out) do
-    optimize_non_loop({:loop, optimize(body)}, out)
+    optimize_non_loop(optimize_loop(optimize(body)), out)
   end
 
   defp optimize_instruction(ins, out), do: optimize_non_loop(ins, out)
@@ -36,5 +36,18 @@ defmodule Bf.Optimizer do
     optimize_instruction({:move, a + b}, out)
   end
 
+  defp optimize_non_loop({:add, b}, [{:set, a} | out]) do
+    optimize_non_loop({:set, a + b}, out)
+  end
+
+  defp optimize_non_loop({:set, n}, [{:add, _} | out]), do: optimize_non_loop({:set, n}, out)
+  defp optimize_non_loop({:set, n}, [{:set, _} | out]), do: optimize_non_loop({:set, n}, out)
+  defp optimize_non_loop({:loop, _}, [{:set, 0} | _] = out), do: out
+
   defp optimize_non_loop(ins, out), do: [ins | out]
+
+  defp optimize_loop([{:add, -1}]), do: {:set, 0}
+  defp optimize_loop([{:move, n}]), do: {:scan, n}
+  defp optimize_loop([{:set, 0}]), do: {:set, 0}
+  defp optimize_loop(body), do: {:loop, body}
 end

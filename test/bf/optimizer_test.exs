@@ -66,4 +66,39 @@ defmodule BfOptimizerTest do
       end
     end
   end
+
+  describe "optimize/1 loop rewrites" do
+    defp optimize_source(source) do
+      {:ok, program} = Bf.Parser.parse(source)
+      optimize(program)
+    end
+
+    test "optimizes clear loops" do
+      assert optimize_source("[-]") == [set: 0]
+    end
+
+    test "combines set 0 and a following add" do
+      assert optimize_source("[-]+++") == [set: 3]
+    end
+
+    test "skips add before set 0" do
+      assert optimize_source("+++[-]") == [set: 0]
+    end
+
+    test "only applies the last of consecutive sets" do
+      assert optimize_source("[-]++[-]+++++[-]--") == [set: -2]
+    end
+
+    test "skips a loop after set 0" do
+      assert optimize_source("+++[-][.+]-") == [set: -1]
+    end
+
+    test "optimizes [>] to a scan 1" do
+      assert optimize_source("[>]") == [scan: 1]
+    end
+
+    test "optimizes [<] to a scan -1" do
+      assert optimize_source("[<]") == [scan: -1]
+    end
+  end
 end
