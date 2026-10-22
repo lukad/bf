@@ -4,6 +4,8 @@ defmodule BfParserTest do
 
   import Bf.Parser
 
+  alias Bf.ParseError
+
   describe "parse/1" do
     test "parses an empty program" do
       assert parse("") == {:ok, []}
@@ -52,13 +54,32 @@ defmodule BfParserTest do
     end
 
     test "fails when loop is not closed" do
-      assert {:error, _} = parse("[")
-      assert {:error, _} = parse("[[]")
+      assert parse("[") == {:error, %ParseError{reason: :unmatched_open, line: 1, column: 1}}
     end
 
     test "fails when loop is not opened" do
-      assert {:error, _} = parse("]")
-      assert {:error, _} = parse("[]]")
+      assert parse("]") == {:error, %ParseError{reason: :unmatched_close, line: 1, column: 1}}
+      assert parse("[]]") == {:error, %ParseError{reason: :unmatched_close, line: 1, column: 3}}
+    end
+
+    test "points at the innermost unclosed [" do
+      assert parse("[[]") == {:error, %ParseError{reason: :unmatched_open, line: 1, column: 1}}
+      assert parse("[[") == {:error, %ParseError{reason: :unmatched_open, line: 1, column: 2}}
+      assert parse("+[[-]+") == {:error, %ParseError{reason: :unmatched_open, line: 1, column: 2}}
+    end
+
+    test "counts lines" do
+      assert parse("+\n+\n  ]") ==
+               {:error, %ParseError{reason: :unmatched_close, line: 3, column: 3}}
+    end
+
+    test "counts \\r\\n as one line break" do
+      assert parse("+\r\n+\r\n  ]") ==
+               {:error, %ParseError{reason: :unmatched_close, line: 3, column: 3}}
+    end
+
+    test "counts columns in graphemes" do
+      assert parse("ä é ]") == {:error, %ParseError{reason: :unmatched_close, line: 1, column: 5}}
     end
   end
 end

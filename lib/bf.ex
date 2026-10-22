@@ -26,15 +26,17 @@ defmodule Bf do
   @doc """
   Parses and optimizes a brainfuck program from a string.
 
+  Returns a `Bf.ParseError` if the program's brackets don't match.
+
   ## Examples
 
       iex> {:ok, _program} = Bf.parse("+++++++++[>++++++++<-]>.")
 
-      iex> Bf.parse("[")
-      {:error, "unmatched ["}
+      iex> Bf.parse("+[")
+      {:error, %Bf.ParseError{reason: :unmatched_open, line: 1, column: 2}}
 
   """
-  @spec parse(String.t()) :: {:ok, program} | {:error, term()}
+  @spec parse(String.t()) :: {:ok, program} | {:error, Bf.ParseError.t()}
   def parse(source) do
     with {:ok, program} <- Bf.Parser.parse(source) do
       {:ok, Bf.Optimizer.optimize(program)}

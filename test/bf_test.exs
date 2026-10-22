@@ -163,7 +163,11 @@ defmodule BfTest do
     end
 
     test "returns parse errors" do
-      assert {:error, _} = Bf.parse("[")
+      assert {:error, %Bf.ParseError{} = error} = Bf.parse("+\n[")
+      assert Exception.message(error) == "unmatched [ at line 2, column 1"
+
+      assert {:error, %Bf.ParseError{} = error} = Bf.parse("]")
+      assert Exception.message(error) == "unmatched ] at line 1, column 1"
     end
   end
 

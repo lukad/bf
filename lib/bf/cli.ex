@@ -65,8 +65,8 @@ if Code.ensure_loaded?(Optimus) do
         {:ok, program} ->
           program
 
-        {:error, reason} ->
-          IO.puts("Could not parse program: #{reason}")
+        {:error, error} ->
+          IO.puts("Could not parse program: #{Exception.message(error)}")
           System.halt(1)
       end
     end
