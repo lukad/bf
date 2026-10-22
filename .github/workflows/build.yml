@@ -12,7 +12,7 @@ jobs:
       matrix:
         include:
           # The minimum supported versions, see `elixir` in mix.exs.
-          - elixir: "1.15"
+          - elixir: "1.16"
             otp: "25"
           # The versions in mise.toml.
           - elixir: "1.20"

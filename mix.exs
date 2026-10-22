@@ -5,7 +5,7 @@ defmodule Bf.Mixfile do
     [
       app: :bf,
       version: "1.4.0",
-      elixir: "~> 1.15",
+      elixir: "~> 1.16",
       description: description(),
       package: package(),
       build_embedded: Mix.env() == :prod,
