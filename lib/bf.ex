@@ -39,6 +39,8 @@ defmodule Bf do
 
   @mem_size 30_000
 
+  @compile {:inline, get: 2, put: 3, wrap: 2}
+
   @doc """
   Parses and optimizes a brainfuck program from a string.
 
