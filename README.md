@@ -66,4 +66,4 @@ Hello World!
   - `0 - 1 = 255`
 - The tape is 30000 cells large
 - The tape pointer wraps around 30000
-- '0' on STDIN signals EOF
+- Reading at the end of the input sets the cell to 0

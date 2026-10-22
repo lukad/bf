@@ -39,6 +39,11 @@ defmodule BfTest do
       |> assert_output(expected)
     end
 
+    test "reads 0 at the end of the input" do
+      [{:add, 5}, :read, :write, {:add, 7}, :read, :write]
+      |> assert_output(<<0, 0>>)
+    end
+
     test "stops reading after '0'" do
       program = [:read, {:loop, [:write, :read]}]
       assert_output(program, "abc", "abc\0def")
@@ -149,7 +154,7 @@ defmodule BfTest do
 
     test "echoes input" do
       {:ok, program} = Bf.parse(",[.,]")
-      assert_output(program, "abc", "abc\0")
+      assert_output(program, "abc", "abc")
     end
 
     test "returns :ok" do

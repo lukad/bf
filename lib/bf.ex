@@ -45,7 +45,8 @@ defmodule Bf do
   Runs a brainfuck program.
 
   The program reads input from and writes output to the calling process's
-  group leader, which is usually stdin and stdout.
+  group leader, which is usually stdin and stdout. Reading at the end of the
+  input sets the current cell to 0.
 
   ## Examples
 
@@ -92,11 +93,7 @@ defmodule Bf do
   end
 
   defp run([:read | rest], ptr, mem) do
-    case readc() do
-      :eof -> :ok
-      char -> put(mem, ptr, char &&& 0xFF)
-    end
-
+    put(mem, ptr, readc())
     run(rest, ptr, mem)
   end
 
@@ -122,10 +119,11 @@ defmodule Bf do
     IO.binwrite(<<cell>>)
   end
 
+  # Reading at EOF, or failing to read, reads 0.
   defp readc do
     case IO.getn("", 1) do
-      {:error, _reason} -> :eof
-      :eof -> :eof
+      {:error, _reason} -> 0
+      :eof -> 0
       <<char>> -> char
     end
   end
