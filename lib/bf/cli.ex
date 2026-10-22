@@ -74,7 +74,7 @@ if Code.ensure_loaded?(Optimus) do
     defp run_program(program_file) do
       program_file
       |> parse_program()
-      |> Bf.run()
+      |> Bf.run(IO.binstream(:stdio, 1), IO.binstream(:stdio, 1))
     end
 
     defp print_ast(program_file) do

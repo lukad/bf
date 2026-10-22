@@ -6,9 +6,10 @@ defmodule Bf do
 
   ## Examples
 
-      {:ok, program} = Bf.parse("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
-      Bf.run(program)
-      Hello
+      iex> {:ok, program} = Bf.parse("--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.")
+      iex> Bf.run(program)
+      "Hello"
+
   """
 
   @typedoc """
@@ -44,69 +45,126 @@ defmodule Bf do
   end
 
   @doc """
-  Runs a brainfuck program.
+  Runs a brainfuck program with the given input and returns its output.
 
-  The program reads input from and writes output to the calling process's
-  group leader, which is usually stdin and stdout. Reading at the end of the
-  input sets the current cell to 0.
+  Input and output are bytes. Reading at the end of the input sets the current
+  cell to 0. See `run/3` to stream input and output.
 
   ## Examples
 
-      {:ok, program} = Bf.parse("++++++++++[->++++++++++<]>++.+++++++++.." <>
-                                "<+++++++++[->---------<]>-----------------.---.<")
-      Bf.run(program)
-      foo
+      iex> {:ok, program} = Bf.parse(",[.,]")
+      iex> Bf.run(program, "hello")
+      "hello"
 
   """
-  @spec run(program) :: :ok
-  def run(program) do
-    run(program, 0, :atomics.new(@mem_size, signed: false))
-    :ok
+  @spec run(program, binary) :: binary
+  def run(program, input \\ "") when is_binary(input) do
+    run(program, [input], "")
   end
 
-  # Memory is mutable, so run/3 only returns the pointer.
-  defp run([{:add, x} | rest], ptr, mem) do
+  @doc """
+  Runs a brainfuck program, streaming its input and output.
+
+  `input` is an enumerable of binaries. It is only consumed as far as the
+  program reads, one byte per `,`. Each byte the program writes is put into the
+  `output` collectable right away. Returns the collectable's result.
+
+  Reading at the end of the input sets the current cell to 0.
+
+  ## Examples
+
+      iex> {:ok, program} = Bf.parse(",[.,]")
+      iex> Bf.run(program, ["he", "llo"], "")
+      "hello"
+
+  To stream stdin and stdout, with stdio in latin1 mode so bytes pass through
+  unchanged:
+
+      Bf.run(program, IO.binstream(:stdio, 1), IO.binstream(:stdio, 1))
+
+  """
+  @spec run(program, Enumerable.t(), Collectable.t()) :: term
+  def run(program, input, output) do
+    {output, collector} = Collectable.into(output)
+
+    {_ptr, {_chunk, input, output, collector}} =
+      run(program, 0, new_memory(), {"", {:unstarted, input}, output, collector})
+
+    if is_function(input), do: input.({:halt, nil})
+    collector.(output, :done)
+  end
+
+  defp new_memory, do: :atomics.new(@mem_size, signed: false)
+
+  defp run([{:add, x} | rest], ptr, mem, io) do
     put(mem, ptr, get(mem, ptr) + x &&& 0xFF)
-    run(rest, ptr, mem)
+    run(rest, ptr, mem, io)
   end
 
-  defp run([{:move, x} | rest], ptr, mem) do
-    run(rest, wrap(ptr + x), mem)
+  defp run([{:move, x} | rest], ptr, mem, io) do
+    run(rest, wrap(ptr + x), mem, io)
   end
 
-  defp run([{:set, x} | rest], ptr, mem) do
+  defp run([{:set, x} | rest], ptr, mem, io) do
     put(mem, ptr, x &&& 0xFF)
-    run(rest, ptr, mem)
+    run(rest, ptr, mem, io)
   end
 
-  defp run([{:scan, step} | rest], ptr, mem) do
-    run(rest, scan(ptr, mem, step), mem)
+  defp run([{:scan, step} | rest], ptr, mem, io) do
+    run(rest, scan(ptr, mem, step), mem, io)
   end
 
-  defp run([{:mul_run, transfers} | rest], ptr, mem) do
+  defp run([{:mul_run, transfers} | rest], ptr, mem, io) do
     mul_run(transfers, ptr, get(mem, ptr), mem)
     put(mem, ptr, 0)
-    run(rest, ptr, mem)
+    run(rest, ptr, mem, io)
   end
 
-  defp run([:write | rest], ptr, mem) do
-    putc(ptr, mem)
-    run(rest, ptr, mem)
+  defp run([:write | rest], ptr, mem, io) do
+    run(rest, ptr, mem, write(io, get(mem, ptr)))
   end
 
-  defp run([:read | rest], ptr, mem) do
-    put(mem, ptr, readc())
-    run(rest, ptr, mem)
+  defp run([:read | rest], ptr, mem, io) do
+    {byte, io} = read(io)
+    put(mem, ptr, byte)
+    run(rest, ptr, mem, io)
   end
 
-  defp run([{:loop, body} | rest] = program, ptr, mem) do
+  defp run([{:loop, body} | rest] = program, ptr, mem, io) do
     case get(mem, ptr) do
-      0 -> run(rest, ptr, mem)
-      _ -> run(program, run(body, ptr, mem), mem)
+      0 ->
+        run(rest, ptr, mem, io)
+
+      _ ->
+        {ptr, io} = run(body, ptr, mem, io)
+        run(program, ptr, mem, io)
     end
   end
 
-  defp run([], ptr, _mem), do: ptr
+  defp run([], ptr, _mem, io), do: {ptr, io}
+
+  defp read({<<byte, chunk::binary>>, input, output, collector}) do
+    {byte, {chunk, input, output, collector}}
+  end
+
+  defp read({"", :done, _output, _collector} = io), do: {0, io}
+
+  defp read({"", input, output, collector}) do
+    case next_chunk(input) do
+      {:suspended, chunk, input} -> read({chunk, input, output, collector})
+      {_done_or_halted, nil} -> read({"", :done, output, collector})
+    end
+  end
+
+  defp next_chunk({:unstarted, input}) do
+    Enumerable.reduce(input, {:cont, nil}, fn chunk, nil -> {:suspend, chunk} end)
+  end
+
+  defp next_chunk(continuation), do: continuation.({:cont, nil})
+
+  defp write({chunk, input, output, collector}, byte) do
+    {chunk, input, collector.(output, {:cont, <<byte>>}), collector}
+  end
 
   defp mul_run([], _ptr, _cell, _mem), do: :ok
 
@@ -114,20 +172,6 @@ defmodule Bf do
     target = wrap(ptr + offset)
     put(mem, target, get(mem, target) + cell * factor &&& 0xFF)
     mul_run(transfers, ptr, cell, mem)
-  end
-
-  defp putc(ptr, mem) do
-    cell = get(mem, ptr)
-    IO.binwrite(<<cell>>)
-  end
-
-  # Reading at EOF, or failing to read, reads 0.
-  defp readc do
-    case IO.getn("", 1) do
-      {:error, _reason} -> 0
-      :eof -> 0
-      <<char>> -> char
-    end
   end
 
   defp scan(ptr, mem, step) do

@@ -14,25 +14,10 @@ inputs =
     {name, %{unoptimized: unoptimized, optimized: optimized}}
   end
 
-{:ok, null} = File.open("/dev/null", [:write])
-
-# Bf.run writes to the group leader. Pointing it at /dev/null keeps the
-# programs' output out of the report while still paying for the writes.
-run = fn program ->
-  leader = Process.group_leader()
-  Process.group_leader(self(), null)
-
-  try do
-    Bf.run(program)
-  after
-    Process.group_leader(self(), leader)
-  end
-end
-
 Benchee.run(
   %{
-    "optimized" => fn %{optimized: program} -> run.(program) end,
-    "unoptimized" => fn %{unoptimized: program} -> run.(program) end
+    "optimized" => fn %{optimized: program} -> Bf.run(program) end,
+    "unoptimized" => fn %{unoptimized: program} -> Bf.run(program) end
   },
   inputs: inputs,
   warmup: 1,
