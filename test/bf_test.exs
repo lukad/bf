@@ -152,6 +152,11 @@ defmodule BfTest do
       assert_output(program, "abc", "abc\0")
     end
 
+    test "returns :ok" do
+      {:ok, program} = Bf.parse("+.")
+      capture_io(fn -> assert Bf.run(program) == :ok end)
+    end
+
     test "returns parse errors" do
       assert {:error, _} = Bf.parse("[")
     end
@@ -163,13 +168,13 @@ defmodule BfTest do
         {:ok, program} = Bf.Parser.parse(source)
         {:ok, optimized} = Bf.parse(source)
 
-        assert run_with_output(program) == run_with_output(optimized),
+        assert output_of(program) == output_of(optimized),
                "optimized program behaves differently: #{inspect(source)}"
       end
     end
   end
 
-  defp run_with_output(program) do
-    with_io("abc\0", fn -> Bf.run(program) end)
+  defp output_of(program) do
+    capture_io("abc\0", fn -> Bf.run(program) end)
   end
 end

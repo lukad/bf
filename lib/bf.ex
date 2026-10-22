@@ -19,13 +19,6 @@ defmodule Bf do
   """
   @opaque program :: Bf.Program.t()
 
-  @typedoc """
-  The state returned by the interpreter.
-
-  It is the current cell index and the memory.
-  """
-  @type state :: {non_neg_integer, [byte()]}
-
   @mem_size 30_000
 
   @compile {:inline, get: 2, put: 3, wrap: 1}
@@ -49,7 +42,10 @@ defmodule Bf do
   end
 
   @doc """
-  Executes a brainfuck program. Returns the machine's state.
+  Runs a brainfuck program.
+
+  The program reads input from and writes output to the calling process's
+  group leader, which is usually stdin and stdout.
 
   ## Examples
 
@@ -59,11 +55,10 @@ defmodule Bf do
       foo
 
   """
-  @spec run(program) :: state
+  @spec run(program) :: :ok
   def run(program) do
-    mem = :atomics.new(@mem_size, signed: false)
-    ptr = run(program, 0, mem)
-    {ptr, for(i <- 1..@mem_size, do: :atomics.get(mem, i))}
+    run(program, 0, :atomics.new(@mem_size, signed: false))
+    :ok
   end
 
   # Memory is mutable, so run/3 only returns the pointer.
