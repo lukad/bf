@@ -32,7 +32,6 @@ defmodule Bf.Mixfile do
     [
       {:git_ops, "~> 2.0", only: [:dev], runtime: false},
       {:benchee, "~> 1.5", only: :dev},
-      {:combine, "~> 0.10"},
       {:optimus, "~> 0.6", runtime: false, optional: true},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
