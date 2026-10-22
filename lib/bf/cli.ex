@@ -72,9 +72,14 @@ if Code.ensure_loaded?(Optimus) do
     end
 
     defp run_program(program_file) do
-      program_file
-      |> parse_program()
-      |> Bf.run(IO.binstream(:stdio, 1), IO.binstream(:stdio, 1))
+      program = parse_program(program_file)
+      :logger.set_module_level(:user_drv, :none)
+
+      try do
+        Bf.run(program, IO.binstream(:stdio, 1), IO.binstream(:stdio, 1))
+      catch
+        :error, :terminated -> System.halt(141)
+      end
     end
 
     defp print_ast(program_file) do
