@@ -9,19 +9,6 @@ defmodule Bf.Parser do
 
   """
 
-  @typedoc "All possible brainfuck instructions"
-  @type instruction ::
-          {:add, integer}
-          | {:move, integer}
-          | {:set, integer}
-          | {:scan, integer}
-          | :read
-          | :write
-          | {:loop, program}
-
-  @typedoc "A list of brainfuck instructions"
-  @type program :: list(instruction)
-
   @doc """
   Parses a brainfuck program into and returns a list of instructions.
 
@@ -34,7 +21,7 @@ defmodule Bf.Parser do
       {:error, "unmatched ["}
   """
 
-  @spec parse(String.t()) :: {:ok, program} | {:error, term}
+  @spec parse(String.t()) :: {:ok, Bf.program()} | {:error, term}
   def parse(source) do
     chars = String.graphemes(source)
     parse(chars, [[]])

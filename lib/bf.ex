@@ -12,11 +12,29 @@ defmodule Bf do
   """
 
   @typedoc """
+  A brainfuck instruction.
+
+  The parser only emits `:add`, `:move`, `:read`, `:write` and `:loop`.
+  `:set` and `:scan` are introduced by `Bf.Optimizer`.
+  """
+  @type instruction ::
+          {:add, integer}
+          | {:move, integer}
+          | {:set, integer}
+          | {:scan, integer}
+          | :read
+          | :write
+          | {:loop, program}
+
+  @typedoc "A list of brainfuck instructions"
+  @type program :: [instruction]
+
+  @typedoc """
   The state returned by the interpreter.
 
   It is the current cell index and the memory.
   """
-  @type state :: {integer, :array.array(byte())}
+  @type state :: {non_neg_integer, [byte()]}
 
   @mem_size 30_000
 
@@ -29,7 +47,7 @@ defmodule Bf do
       {:ok, [{:add, 9}, {:loop, [move: 1, add: 8, move: -1, add: -1]}, {:move, 1}, :write]}
 
   """
-  @spec parse(String.t()) :: {:ok, Bf.Parser.program()} | {:error, term()}
+  @spec parse(String.t()) :: {:ok, program} | {:error, term()}
   def parse(source) do
     with {:ok, program} <- Bf.Parser.parse(source) do
       {:ok, Bf.Optimizer.optimize(program)}
@@ -47,7 +65,7 @@ defmodule Bf do
       foo
 
   """
-  @spec run(Bf.Parser.program()) :: state
+  @spec run(program) :: state
   def run(program) do
     mem = :array.new(@mem_size, default: 0)
     {ptr, mem} = run(program, 0, mem)

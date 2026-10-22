@@ -12,7 +12,7 @@ defmodule Bf.Optimizer do
       [{:add, 1}]
 
   """
-  @spec optimize(Bf.Parser.program()) :: Bf.Parser.program()
+  @spec optimize(Bf.program()) :: Bf.program()
   def optimize(program) do
     program
     |> Enum.reduce([], &optimize_instruction/2)
