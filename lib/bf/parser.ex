@@ -1,13 +1,5 @@
 defmodule Bf.Parser do
-  @moduledoc """
-  Parses brainfuck programs.
-
-  ## Examples
-
-      iex> Bf.Parser.parse("++[-.]>-")
-      {:ok, [add: 1, add: 1, loop: [{:add, -1}, :write], move: 1, add: -1]}
-
-  """
+  @moduledoc false
 
   @doc """
   Parses a brainfuck program into and returns a list of instructions.
@@ -21,7 +13,7 @@ defmodule Bf.Parser do
       {:error, "unmatched ["}
   """
 
-  @spec parse(String.t()) :: {:ok, Bf.program()} | {:error, term}
+  @spec parse(String.t()) :: {:ok, Bf.Program.t()} | {:error, term}
   def parse(source) do
     chars = String.graphemes(source)
     parse(chars, [[]])

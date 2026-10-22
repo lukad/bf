@@ -12,23 +12,12 @@ defmodule Bf do
   """
 
   @typedoc """
-  A brainfuck instruction.
+  A parsed and optimized brainfuck program.
 
-  The parser only emits `:add`, `:move`, `:read`, `:write` and `:loop`.
-  `:set` and `:scan` are introduced by `Bf.Optimizer`.
+  Its structure is internal and may change in any release. Create programs
+  with `parse/1` and run them with `run/1`.
   """
-  @type instruction ::
-          {:add, integer}
-          | {:move, integer}
-          | {:set, integer}
-          | {:scan, integer}
-          | {:mul_run, [{integer, integer}]}
-          | :read
-          | :write
-          | {:loop, program}
-
-  @typedoc "A list of brainfuck instructions"
-  @type program :: [instruction]
+  @opaque program :: Bf.Program.t()
 
   @typedoc """
   The state returned by the interpreter.
@@ -46,8 +35,10 @@ defmodule Bf do
 
   ## Examples
 
-      iex> Bf.parse("+++++++++[>++++++++<-]>.")
-      {:ok, [{:add, 9}, {:mul_run, [{1, 8}]}, {:move, 1}, :write]}
+      iex> {:ok, _program} = Bf.parse("+++++++++[>++++++++<-]>.")
+
+      iex> Bf.parse("[")
+      {:error, "unmatched ["}
 
   """
   @spec parse(String.t()) :: {:ok, program} | {:error, term()}

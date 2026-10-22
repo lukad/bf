@@ -1,7 +1,5 @@
 defmodule Bf.Optimizer do
-  @moduledoc """
-  Optimizes parsed brainfuck programs.
-  """
+  @moduledoc false
 
   @doc """
   Optimizes a parsed brainfuck program.
@@ -12,7 +10,7 @@ defmodule Bf.Optimizer do
       [{:add, 1}]
 
   """
-  @spec optimize(Bf.program()) :: Bf.program()
+  @spec optimize(Bf.Program.t()) :: Bf.Program.t()
   def optimize(program) do
     program
     |> Enum.reduce([], &optimize_instruction/2)
