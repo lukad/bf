@@ -5,6 +5,19 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v2.1.0](https://github.com/lukad/bf/compare/v2.0.0...v2.1.0) (2026-10-25)
+
+
+
+
+### Features:
+
+* add Bf.parse!/1 by [@lukad](https://github.com/lukad)
+
+### Performance Improvements:
+
+* optimize multiplication loops with cancelled-out transfers to set 0 by [@lukad](https://github.com/lukad)
+
 ## [v2.0.0](https://github.com/lukad/bf/compare/v1.4.0...v2.0.0) (2026-10-22)
 ### Breaking Changes:
 

@@ -18,7 +18,7 @@ Add `bf` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:bf, "~> 2.0.0"}
+    {:bf, "~> 2.1.0"}
   ]
 end
 ```
