@@ -1,6 +1,7 @@
 defmodule Bf.ParseError do
   @moduledoc """
-  Returned by `Bf.parse/1` when a program's brackets don't match.
+  Returned by `Bf.parse/1` and raised by `Bf.parse!/1` when a program's
+  brackets don't match.
 
   `reason` is `:unmatched_open` for a `[` without a matching `]`, and
   `:unmatched_close` for a `]` without a matching `[`. `line` and `column`

@@ -186,6 +186,26 @@ defmodule BfTest do
     end
   end
 
+  describe "Bf.parse!/1" do
+    test "returns the program" do
+      {:ok, program} = Bf.parse(",[.,]")
+      assert Bf.parse!(",[.,]") == program
+    end
+
+    test "raises parse errors" do
+      error =
+        assert_raise Bf.ParseError, "unmatched [ at line 2, column 1", fn ->
+          Bf.parse!("+\n[")
+        end
+
+      assert %Bf.ParseError{reason: :unmatched_open, line: 2, column: 1} = error
+
+      assert_raise Bf.ParseError, "unmatched ] at line 1, column 1", fn ->
+        Bf.parse!("]")
+      end
+    end
+  end
+
   describe "Bf.run/3" do
     setup do
       {:ok, program} = Bf.parse(",[.,]")

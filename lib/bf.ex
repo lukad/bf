@@ -45,6 +45,23 @@ defmodule Bf do
   end
 
   @doc """
+  Parses and optimizes a brainfuck program from a string, raising on error.
+
+  ## Examples
+
+      iex> Bf.parse!("+[")
+      ** (Bf.ParseError) unmatched [ at line 1, column 2
+
+  """
+  @spec parse!(String.t()) :: program
+  def parse!(source) do
+    case parse(source) do
+      {:ok, program} -> program
+      {:error, error} -> raise error
+    end
+  end
+
+  @doc """
   Runs a brainfuck program with the given input and returns its output.
 
   Input and output are bytes. Reading at the end of the input sets the current

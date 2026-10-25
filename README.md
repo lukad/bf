@@ -44,6 +44,13 @@ iex> Bf.parse("+[")
 {:error, %Bf.ParseError{reason: :unmatched_open, line: 1, column: 2}}
 ```
 
+`Bf.parse!/1` returns the program directly and raises the `Bf.ParseError` instead:
+
+```elixir
+iex> Bf.parse!("+[")
+** (Bf.ParseError) unmatched [ at line 1, column 2
+```
+
 ## Command line
 
 Install the `bf` escript with mix:
