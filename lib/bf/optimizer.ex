@@ -54,14 +54,17 @@ defmodule Bf.Optimizer do
   defp optimize_mul(body) do
     with {:ok, 0, muls} <- collect_muls(body, 0, %{}),
          {-1, transfers} <- Map.pop(muls, 0) do
-      case Enum.sort(transfers) do
-        [] -> {:set, 0}
-        transfers -> {:mul_run, transfers}
-      end
+      transfers
+      |> Enum.reject(fn {_, n} -> n == 0 end)
+      |> Enum.sort()
+      |> mul_run()
     else
       _ -> {:loop, body}
     end
   end
+
+  defp mul_run([]), do: {:set, 0}
+  defp mul_run(transfers), do: {:mul_run, transfers}
 
   defp collect_muls([], offset, muls), do: {:ok, offset, muls}
 

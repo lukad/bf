@@ -122,6 +122,11 @@ defmodule BfOptimizerTest do
       assert optimize_source("[->--<]") == [mul_run: [{1, -2}]]
     end
 
+    test "drops transfers that cancel out" do
+      assert optimize_source("[>+<->-<]") == [set: 0]
+      assert optimize_source("[>+<->-<>>++<<]") == [mul_run: [{2, 2}]]
+    end
+
     test "skips a multiplication loop after set 0" do
       assert optimize_source("[-][->+<]") == [set: 0]
     end
